@@ -1,0 +1,31 @@
+//==Context
+const modifier = (text) => {
+  initWorldReputation(state);
+  initPersonalReputation(state);
+
+  const worldSummary = getReputationSummary(state);
+  const personal = state.reputation || {};
+  const personalSummary = `Charmer:${personal.Charmer} Honorable:${personal.Honorable} Rogue:${personal.Rogue} Dominant:${personal.Dominant} Submissive:${personal.Submissive} Prankster:${personal.Prankster}`;
+
+  const instructions = `
+You are the narrator and game master.
+Write in second-person present tense.
+Use the reputation summaries below to influence how the world and characters react.
+Do not state numeric values directly unless contextually justified.
+Use world reputation to shape political, factional, or widespread responses.
+Use personal reputation to flavor interpersonal relationships and tone.
+Always show, don't tell; infer reputation reactions through narrative.
+`.trim();
+
+  return {
+    text: [
+      instructions,
+      `[World Reputation Summary] ${worldSummary}`,
+      `[Personal Reputation Summary] ${personalSummary}`,
+      text
+    ].join("\n\n")
+  };
+};
+
+// Don't modify this part
+modifier(text)
