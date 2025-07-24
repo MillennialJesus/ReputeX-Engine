@@ -1,0 +1,49 @@
+//==Input
+const modifier = (text) => {
+  // === Initialize World and Personal Reputation ===
+  initWorldReputation(state);
+  initPersonalReputation(state);
+
+  // === Snapshot Before Changes ===
+  const oldWorldRep = { ...state.factions };
+  const oldPersonalRep = { ...state.reputation };
+
+  // === Personal Reputation Parsing ===
+  const patterns = getPersonalReputationPatterns();
+  for (const pattern of patterns) {
+    if (pattern.regex.test(text)) {
+      for (const cat in pattern.changes) {
+        state.reputation[cat] = (state.reputation[cat] || 0) + pattern.changes[cat];
+      }
+      logPersonalRepChange(text, pattern.changes); // ✅ Now inside the loop per pattern match
+    }
+  }
+
+  // === Reputation Delta Tracking ===
+  state.lastWorldReputationChange = trackReputationChanges(oldWorldRep, state.factions);
+  state.lastPersonalReputationChange = trackReputationChanges(oldPersonalRep, state.reputation);
+
+  // === Log interaction (for triggers/titles later)
+  state.lastInteraction = text.toLowerCase();
+
+  return { text };
+};
+
+// === Helper: Rep Change Logger ===
+function logPersonalRepChange(text, changes) {
+  if (!state.reputationLog) state.reputationLog = [];
+
+  const summary = Object.entries(changes)
+    .map(([trait, val]) => `${trait} ${val >= 0 ? "+" : ""}${val}`)
+    .join(", ");
+
+  state.reputationLog.push({
+    timestamp: Date.now(),
+    action: text.slice(0, 100),
+    effect: changes,
+    summary,
+  });
+}
+
+// Don't modify this part
+modifier(text)
