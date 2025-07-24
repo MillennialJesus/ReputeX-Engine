@@ -1,0 +1,68 @@
+//==Output
+const modifier = (text) => {
+  const worldDelta = state.lastWorldReputationChange || {};
+  const personalDelta = state.lastPersonalReputationChange || {};
+
+  const rep = state.reputation || {};
+  let changes = [];
+
+  if (Object.keys(worldDelta).length > 0) {
+    const worldChanges = Object.entries(worldDelta)
+      .map(([faction, delta]) => `${faction} ${delta >= 0 ? "+" : ""}${delta}`)
+      .join("  ");
+    changes.push(`[World Reputation Change] ${worldChanges}`);
+  }
+
+  if (Object.keys(personalDelta).length > 0) {
+    const personalChanges = Object.entries(personalDelta)
+      .map(([cat, delta]) => `${cat} ${delta >= 0 ? "+" : ""}${delta}`)
+      .join("  ");
+    changes.push(`[Personal Reputation Change] ${personalChanges}`);
+  }
+
+  // === NPC Reactions based on Personal Rep
+  let reactionLine = "";
+  if (rep.Charmer >= 6 && rep.Dominant >= 3) {
+    reactionLine = "People notice your confident charm. The merchant smiles, but keeps his words careful and respectful.";
+  }
+  if (reactionLine) {
+    text = `${reactionLine}\n\n${text}`;
+  }
+
+  // === Special Event Triggers
+  if (!state.storyEvents) state.storyEvents = {};
+
+  if (
+    rep.Honorable >= 5 &&
+    rep.Prankster >= 3 &&
+    !state.storyEvents.festivalInvite
+  ) {
+    state.storyEvents.festivalInvite = true;
+    changes.push("A group of laughing townsfolk approach you, asking if you'll help with the upcoming Festival of Whimsy. 'We need someone who's both noble... and just a bit of trouble.'");
+  }
+
+  // === Titles / Achievements
+  if (
+    (rep.Charmer + rep.Honorable >= 10) &&
+    state.lastInteraction?.includes("daughter") &&
+    !state.earnedTitles?.paragonOfParenthood
+  ) {
+    if (!state.earnedTitles) state.earnedTitles = {};
+    state.earnedTitles.paragonOfParenthood = true;
+    changes.push("[Title Earned] Paragon of Parenthood: Families speak your name with reverence. Children trust you, and parents seek your wisdom.");
+  }
+
+  // === Summary
+  const worldSummary = getReputationSummary(state);
+  const personalSummary = `[Personal Reputation] Charmer:${rep.Charmer || 0} Honorable:${rep.Honorable || 0} Rogue:${rep.Rogue || 0} Dominant:${rep.Dominant || 0} Submissive:${rep.Submissive || 0} Prankster:${rep.Prankster || 0}`;
+
+  // Clear deltas
+  state.lastWorldReputationChange = {};
+  state.lastPersonalReputationChange = {};
+
+  return {
+    text: [text, ...changes, `[World Reputation] ${worldSummary}`, personalSummary].join("\n\n")
+  };
+};
+// Don't modify this part
+modifier(text)
