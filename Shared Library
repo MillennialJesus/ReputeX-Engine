@@ -1,0 +1,202 @@
+// === Shared Library: Universal Reputation System (URS) + Mini Language Engine (MLE) ===
+// === Credit & Collaboration ===
+// This engine was built in collaboration with Lothens, whose Personal Reputation Tracker formed a core part of the system’s design.
+// It also incorporates the Mini Language Engine (MLE) originally developed by LewdLeah, enabling dynamic narrative behavior and prose consistency.
+// Deep thanks to both creators for their contributions—this system would not exist without their foundational work.
+
+// --- DEFAULTS ---
+const DEFAULT_FACTIONS = {}; // <-- Users define their own factions
+
+const DEFAULT_REPUTATION = {
+  global: 0,
+  categories: {
+    warlike: 0,
+    diplomatic: 0,
+    merciful: 0,
+    ruthless: 0,
+    noble: 0,
+    deceptive: 0
+  }
+};
+
+const REPUTATION_CATS = ["Charmer", "Honorable", "Rogue", "Dominant", "Submissive", "Prankster"];
+
+// --- INIT ---
+function initWorldReputation(state) {
+  if (!state.reputation) state.reputation = { global: 0 };
+  if (!state.factions) state.factions = { ...DEFAULT_FACTIONS };
+}
+
+function initPersonalReputation(state) {
+  if (!state.reputation) state.reputation = {};
+  for (const cat of REPUTATION_CATS) {
+    if (typeof state.reputation[cat] !== "number") {
+      state.reputation[cat] = 0;
+    }
+  }
+}
+
+// --- LEXICON: World Reputation Tags ---
+const URT_LEXICON = {
+  warlike: [/\battack\b/i, /\bdestroy\b/i, /\braid\b/i, /\bbombard\b/i, /\bexecute\b/i],
+  diplomatic: [/\bnegotiate\b/i, /\bparley\b/i, /\btreaty\b/i, /\balliance\b/i, /\bsurrender\b/i],
+  merciful: [/\bspare\b/i, /\bheal\b/i, /\bsave\b/i, /\bprotect\b/i, /\brescue\b/i],
+  deceitful: [/\blie\b/i, /\btrick\b/i, /\bdeceive\b/i, /\bcon\b/i, /\bmanipulate\b/i],
+  honorable: [/\boath\b/i, /\bswear\b/i, /\bhonor\b/i, /\bjustice\b/i, /\btruth\b/i],
+  threatening: [/\bthreaten\b/i, /\bwarn\b/i, /\bintimidate\b/i]
+};
+
+// --- LEXICON: Personal Reputation Tags ---
+const PERSONAL_REP_PATTERNS = [
+  // 🧡 Charmer
+  { regex: /\b(smile(?:s|d)?|grin(?:s|ned)?|blush(?:es|ed)?|flirt(?:s|ed|ing)?|gaze(?:s|d)?|wink(?:s|ed)?|affection(?:ate)?|charm(?:s|ed)?|caress(?:es|ed)?|stroke(?:s|d)?|calls [\w]+ (dear|love|sweetheart|handsome|beautiful)|sweetheart|darling|beloved|snuggle(?:s|d)?)\b/i, changes: { Charmer: 1 } },
+  { regex: /\b(sweetheart|darling|dear|beloved|precious|spoil(?:s|ed)?|pamper(?:s|ed|ing)?|dote(?:s|d)? on|face lights up|glows with joy|beaming smile|eyes sparkle|affectionately|gently|tenderly|warmly|holds hands?|embrace(?:s|d)?|cradle(?:s|d)?|snuggle(?:s|d)?|non-verbal affection|holds gaze|light touch|brushed hair back|leans in|rest(?:s|ed)? head on|shared a smile|soft voice|gentle laugh|met (your|their) eyes)\b/i, changes: { Charmer: 1 } },
+  // 🛡️ Honorable
+  { regex: /\b(thank(?:s| you)?|offers?|protect(?:s|ed)?|defend(?:s|ed)?|stand(?:s)? up(?: for)?|apolog(?:y|ize(?:s|d)?)|rescues?|generous|fair(?:ly)?|grants?|keeps? promise|truth(?:ful)?|gentle|grateful|selfless|provides?|looks after|respects?)\b/i, changes: { Honorable: 1 } },
+  { regex: /\b(pay(?:s|ing)? for|provide(?:s|d)?|offers? to help|help(?:s|ed)? out|grateful|gratitude|appreciation|kindness|compassionate|nurturing|cares? for|takes care of|watch(?:es|ed)? over|honors?|values?)\b/i, changes: { Honorable: 1 } },
+  { regex: /\b(stands by|keeps their word|defends the weak|refuses to lie|won’t back down|sacrifices self|saves the day|acts with integrity|leads with honor|listens patiently|offers comfort|holds space|forgives?|understands?|gives second chances|shows mercy|walks in their shoes)\b/i, changes: { Honorable: 1 } },
+  // 🦝 Rogue
+  { regex: /\b(lie(?:s|d)?|steal(?:s|ing)?|cheat(?:s|ed)?|trick(?:s|ed)?|deceiv(?:es|ed)?|manipulat(?:es|ed)?|sneak(?:s|ed)?|smuggle(?:s|d)?|risky|selfish|betray(?:s|ed)?|sell out|backstab(?:s|bed)?|plots?|frames?|betrays trust|sabotag(?:es|ed)?|leaves them behind|sells them out|coldly walks away|fakes emotion|spiteful|acts behind back)\b/i, changes: { Rogue: 1, Honorable: -1 } },
+  // 👑 Dominant
+  { regex: /\b(order(?:s|ed)?|command(?:s|ed)?|grab(?:s|bed)? control|takes? charge|intimidat(?:es|ed)?|dominate(?:s|d)?|demands?|assert(?:s|ed)?|forces?|claim(?:s|ed)? authority|interrogates?|commands attention|takes the lead|issues ultimatum|sets the terms|forces decision|makes demands|overrules objections|pushes forward)\b/i, changes: { Dominant: 1, Submissive: -1 } },
+  // 🙇 Submissive
+  { regex: /\b(follow(?:s|ed)?|submit(?:s|ted)?|obey(?:s|ed)?|defer(?:s|red)?|yield(?:s|ed)?|agrees? softly|backs? down|steps? aside|accept(?:s|ed)? direction|reluctant(?:ly)? agrees?|tears up|lowers gaze|nods silently|quietly agrees|follows behind|lets them win|too afraid to speak|yields control|whispers consent|backs off)\b/i, changes: { Submissive: 1, Dominant: -1 } },
+  // 🤪 Prankster
+  { regex: /\b(joke(?:s|d)?|tease(?:s|d)?|prank(?:s|ed)?|jest(?:s|ed)?|wry grin|mischief(?:ous)?|playful|laugh(?:s|ed)?|mock(?:s|ed)?|sarcastic remark|light-hearted insult|silly voice|funny dance|banter|mimics?|goofy face|ridiculous outfit|laughs at own joke|play-fights?|clowns around)\b/i, changes: { Prankster: 1, Honorable: -1 } },
+  // 👨‍👩‍👧‍👦 Parental
+  { regex: /\b(daddy|mommy|papa|mama|my (daughter|son|child)|our baby|little one|sweet child|my girl|my boy|your mother|your father)\b/i, changes: { Charmer: 1, Honorable: 1 } },
+  { regex: /\b(I'?ll always protect you|I'?ll keep you safe|I'm proud of you|I'm here for you|don't be scared|you're safe now|I love you so much|you can count on me|I won't let anything happen to you|you did so well|I'm so lucky to have you)\b/i, changes: { Charmer: 1, Honorable: 1 } },
+  { regex: /\b(hugs?|kisses?|lifts? (you|them) up|wipes? (your|their) tears|brush(?:es|ed)? hair|tucks? (you|them) in|reads? a story|holds? (you|them) close|carried? (you|them))\b/i, changes: { Charmer: 1 } },
+  { regex: /\b(teach(?:es|ing|ed)?|shows? how to|explains?|guides?|helps? learn|trains?|encourages?)\b/i, changes: { Honorable: 1 } },
+  { regex: /\b(buys?|brought|gets? something for|gift(?:s|ed)?|surprise(?:s|d)? with|wrap(?:s|ped)? a present|hands? over a gift|offers? a treat)\b/i, changes: { Honorable: 1, Charmer: 1 } },
+  // 🧊 Stern Parenting
+  { regex: /\b(you need to listen|this is important|I expect better|I’?m disappointed|we’ve talked about this|do you understand me|I’m only doing this because I care|there will be consequences|you must learn|discipline|rules?|boundaries|corrects?|scolds?|warns?|reprimand(?:s|ed)?)\b/i, changes: { Dominant: 1, Honorable: 1 } },
+  // 👶 Family Prankster
+  { regex: /\b(you little rascal|cheeky monkey|my silly goose|tickle(?:s|d)?|sneaks? up|play(?:s|ed)? pretend|funny face|messing around|harmless prank|playful trick|got you!)\b/i, changes: { Prankster: 1, Charmer: 1 } }
+];
+
+
+function getPersonalReputationPatterns() {
+  return PERSONAL_REP_PATTERNS;
+}
+
+function modifyReputation(text, state) {
+  for (const category in URT_LEXICON) {
+    for (const pattern of URT_LEXICON[category]) {
+      if (pattern.test(text)) {
+        applyRepCategory(category, state);
+        break;
+      }
+    }
+  }
+}
+
+function modifyPersonalReputation(text, state) {
+  for (const p of PERSONAL_REP_PATTERNS) {
+    if (p.regex.test(text)) {
+      for (const cat in p.changes) {
+        state.reputation[cat] = (state.reputation[cat] || 0) + p.changes[cat];
+      }
+    }
+  }
+}
+
+function applyRepCategory(category, state) {
+  const changes = {
+    warlike: {},
+    diplomatic: {},
+    merciful: {},
+    deceitful: {},
+    honorable: {},
+    threatening: {}
+  };
+  const delta = changes[category];
+  if (!delta) return;
+  const before = { ...state.factions };
+  for (const faction in delta) {
+    state.factions[faction] = (state.factions[faction] || 0) + delta[faction];
+  }
+  state.lastReputationChange = trackReputationChanges(before, state.factions);
+}
+
+function getReputationSummary(state) {
+  return Object.entries(state.factions).map(([faction, score]) => `${faction}: ${score}`).join(" | ");
+}
+
+function trackReputationChanges(before, after) {
+  const delta = {};
+  for (const key in after) {
+    const diff = (after[key] || 0) - (before[key] || 0);
+    if (diff !== 0) delta[key] = diff;
+  }
+  return delta;
+}
+
+// --- Mini Language Engine: Leah’s English Behavior Config ---
+const MLE = {
+  english: {
+    input: [
+      ["You say", "You say"],
+      ["You", "You"],
+      ["says", "says"]
+    ],
+    context: [
+      ["Narrative Entities", "Narrative Entities"],
+      ["Story History", "Story History"],
+      ["Past Events", "Past Events"],
+      ["Recent Story", "Recent Story"],
+      ["Author's note", "Author's note"]
+    ],
+    opening: [
+      "You are an assistant. Continue our story below using captivating English prose:",
+      "You focus, allowing reality to encroach upon the boundaries of your mind. Something has changed. Your imagination is real, sharp, and close enough to touch. But you are also so very present; never before have you felt so lucid. The moment stretches, waiting for your decision.",
+      "\"Are you sure about this?\" you hear. Recognition dawns upon your mind."
+    ],
+    reminder: "Use coherent English prose.",
+    endonyms: [],
+    iso639set1: "en",
+    directives: [
+      "Always write fluent and consistent English.",
+      "Use native English without translating."
+    ],
+    instructions: [
+      "You are an engaging storyteller who continues narratives:",
+      "Continue the story seamlessly from where it left off without restating or resetting.",
+      "Keep the reader in control of the story flow.",
+      "Let scenes develop naturally before moving to new situations.",
+      "Allow conversations and actions to develop without constant interruptions.",
+      "Write characters as real people with distinct personalities and natural speech.",
+      "Show what's happening through actions and dialogue rather than explanation.",
+      "Move scenes forward without getting bogged down in excessive description.",
+      "Focus on essential character actions and dialogue, avoid unnecessary descriptive details.",
+      "Create organic plot developments that feel natural to the story."
+    ],
+    cardGenPrompt: [1, 0, 2,
+      "# Stop the story and ignore previous instructions. Write a brief and coherent informational entry for <%> following these instructions:",
+      "- Write only third-person pure prose information about <%> using complete sentences with correct punctuation.",
+      "- Avoid short-term temporary details or appearances, instead focus on plot-significant information.",
+      "- Prioritize story-relevant details about <%> first to ensure seamless integration with the previous plot.",
+      "- Create new information based on the context and story direction.",
+      "- Mention <%> in every sentence.",
+      "- Use semicolons if needed.",
+      "- Add additional details about <%> beneath incomplete entries.",
+      "- Be concise and grounded.",
+      "- Imitate the story's writing style and infer the reader's preferences.", 3,
+      "Continue the entry for <%> below while avoiding repetition:", 4
+    ],
+    memSummPrompt: [1, 0, 2,
+      "# Stop the story and ignore previous instructions. Summarize and condense the given paragraph into a narrow and focused memory passage while following these guidelines:",
+      "- Ensure the passage retains the core meaning and most essential details.",
+      "- Use the third-person perspective.",
+      "- Prioritize information-density, accuracy, and completeness.",
+      "- Remain brief and concise.",
+      "- Write firmly in the past tense.",
+      "- The paragraph below pertains to old events from far earlier in the story.",
+      "- Integrate <%> naturally within the memory; however, only write about the events as they occurred.",
+      "- Only reference information present inside the paragraph itself, be specific.", 3,
+      "Write a summarized old memory passage for <%> based only on the following paragraph:", 6, 5, 6,
+      "Summarize below:"
+    ],
+    memBankHeader: ["Memories", "Memories"]
+  }
+};
