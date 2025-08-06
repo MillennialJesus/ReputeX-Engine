@@ -1,21 +1,30 @@
-//==Input
+// === Input Modifier (Merged) ===
 const modifier = (text) => {
+  // === World Clock Initialization ===
+  if (!state.worldClock) state.worldClock = { year: 1454, month: 3, day: 27, hour: 7, minute: 0 };
+  if (!state.pendingMinutes) state.pendingMinutes = 0;
+
   // === Initialize World and Personal Reputation ===
   initWorldReputation(state);
   initPersonalReputation(state);
+
+  // === DEBUG: Rep State on Init ===
+  if (typeof output !== "undefined") output.push("[DEBUG] Rep after init: " + JSON.stringify(state.reputation));
 
   // === Snapshot Before Changes ===
   const oldWorldRep = { ...state.factions };
   const oldPersonalRep = { ...state.reputation };
 
-  // === Personal Reputation Parsing ===
+  // === Reputation Parsing (Regex Patterns) ===
   const patterns = getPersonalReputationPatterns();
   for (const pattern of patterns) {
     if (pattern.regex.test(text)) {
+      if (typeof output !== "undefined") output.push("[DEBUG] Pattern matched: " + pattern.regex + " Changes: " + JSON.stringify(pattern.changes));
       for (const cat in pattern.changes) {
         state.reputation[cat] = (state.reputation[cat] || 0) + pattern.changes[cat];
       }
-      logPersonalRepChange(text, pattern.changes); // ✅ Now inside the loop per pattern match
+      logPersonalRepChange(text, pattern.changes);
+      if (typeof output !== "undefined") output.push("[DEBUG] After applying changes: " + JSON.stringify(state.reputation));
     }
   }
 
@@ -23,13 +32,103 @@ const modifier = (text) => {
   state.lastWorldReputationChange = trackReputationChanges(oldWorldRep, state.factions);
   state.lastPersonalReputationChange = trackReputationChanges(oldPersonalRep, state.reputation);
 
-  // === Log interaction (for triggers/titles later)
+  // === World Clock / Hybrid Scene Time System ===
+  function getClockString() {
+    const c = state.worldClock;
+    return `Year ${c.year}, ${String(c.month).padStart(2, "0")}-${String(c.day).padStart(2, "0")} ${String(c.hour).padStart(2, "0")}:${String(c.minute).padStart(2, "0")}`;
+  }
+
+  const NUMBER_WORDS = {
+    a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5,
+    six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+    eleven: 11, twelve: 12, few: 3 // Expand as needed!
+  };
+
+  // --- 1. Natural Language Skip Parser ---
+  let natSkip = text.match(/(a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|few|\d+)\s*(day|days|month|months|year|years)\s+go(?:es)?\s+by/i);
+  if (natSkip) {
+    let amountRaw = natSkip[1].toLowerCase();
+    let amount = NUMBER_WORDS[amountRaw] || parseInt(amountRaw);
+    let unit = natSkip[2].toLowerCase();
+    if (unit.startsWith('day')) {
+      for (let i = 0; i < amount; i++) advanceTime(24 * 60);
+    } else if (unit.startsWith('month')) {
+      for (let i = 0; i < amount; i++) {
+        let days = daysInMonth ? daysInMonth(state.worldClock.year, state.worldClock.month) : 30;
+        for (let d = 0; d < days; d++) advanceTime(24 * 60);
+      }
+    } else if (unit.startsWith('year')) {
+      for (let i = 0; i < amount; i++) {
+        for (let m = 1; m <= 12; m++) {
+          let days = daysInMonth ? daysInMonth(state.worldClock.year, m) : 30;
+          for (let d = 0; d < days; d++) advanceTime(24 * 60);
+        }
+      }
+    }
+    text = text.replace(natSkip[0], '');
+  } else {
+    // --- 2. Classic "skip N X" Parser ---
+    let skipMatch = text.match(/skip\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|few|\d+)\s*(day|days|month|months|year|years)/i);
+    if (skipMatch) {
+      let amountRaw = skipMatch[1].toLowerCase();
+      let amount = NUMBER_WORDS[amountRaw] || parseInt(amountRaw);
+      let unit = skipMatch[2].toLowerCase();
+      if (unit.startsWith('day')) {
+        for (let i = 0; i < amount; i++) advanceTime(24 * 60);
+      } else if (unit.startsWith('month')) {
+        for (let i = 0; i < amount; i++) {
+          let days = daysInMonth ? daysInMonth(state.worldClock.year, state.worldClock.month) : 30;
+          for (let d = 0; d < days; d++) advanceTime(24 * 60);
+        }
+      } else if (unit.startsWith('year')) {
+        for (let i = 0; i < amount; i++) {
+          for (let m = 1; m <= 12; m++) {
+            let days = daysInMonth ? daysInMonth(state.worldClock.year, m) : 30;
+            for (let d = 0; d < days; d++) advanceTime(24 * 60);
+          }
+        }
+      }
+      text = text.replace(skipMatch[0], '');
+    } else {
+      // --- 3. Action, Dialogue, Narration, or CONTINUE (empty) ---
+      let mins = 0;
+      let actionMatched = false;
+
+      mins = getCompoundActionMinutes(text);
+      if (mins && mins > 0) actionMatched = true;
+
+      // Handles ALL cases, including empty input
+      if (!actionMatched) {
+        if (!text.trim()) {
+          mins = 2; // Continue always advances 2 minutes!
+        } else if (
+          /^["“”']/m.test(text.trim()) ||
+          /\byou (say|ask|reply|respond|murmur|shout|whisper)\b/i.test(text)
+        ) {
+          mins = 3;
+        } else {
+          mins = 2;
+        }
+      }
+      // Always advance if mins > 0
+      advanceTime(mins);
+      state.lastActionMinutes = mins;
+    }
+  }
+
+  // === Log interaction (for triggers/titles later) ===
   state.lastInteraction = text.toLowerCase();
+
+  // === DEBUG: End ===
+  if (typeof output !== "undefined") output.push("[DEBUG] Input Modifier END");
+
+  // === AutoCards (Input) ===
+  text = AutoCards("input", text);  //<==IF NOT USING AUTO-CARDS, REMOVE!!
 
   return { text };
 };
 
-// === Helper: Rep Change Logger ===
+// --- Helper: Rep Change Logger (unchanged) ---
 function logPersonalRepChange(text, changes) {
   if (!state.reputationLog) state.reputationLog = [];
 
@@ -43,6 +142,8 @@ function logPersonalRepChange(text, changes) {
     effect: changes,
     summary,
   });
+  scanReputation(text);
+  if (typeof output !== "undefined") output.push("[DEBUG] logPersonalRepChange called: " + summary);
 }
 
 // Don't modify this part
