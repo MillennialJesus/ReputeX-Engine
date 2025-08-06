@@ -113,7 +113,7 @@ LewdLeah – Mini Language Engine (MLE) system (coming soon!)
 MillennialJesus – Core integration, modular architecture, system expansion
 
 ❓ Support
-If you need help customizing or expanding ReputeX for your own scenario, contact MillennialJesus or Lothens on Discord.
+If you need help customizing or expanding ReputeX for your own scenario, contact `MillennialJesus` or `Lothens` on Discord.
 
 
 
