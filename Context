@@ -1,29 +1,90 @@
-//==Context
+// === Context Modifier (Merged) ===
 const modifier = (text) => {
+  if (typeof output !== "undefined") output.push("[DEBUG] Context Modifier started");
+
+  // --- Reputation System ---
   initWorldReputation(state);
+  if (typeof output !== "undefined") output.push("[DEBUG] After initWorldReputation: " + JSON.stringify(state.reputation));
   initPersonalReputation(state);
+  if (typeof output !== "undefined") output.push("[DEBUG] After initPersonalReputation: " + JSON.stringify(state.reputation));
 
+  // --- Summaries ---
   const worldSummary = getReputationSummary(state);
+  if (typeof output !== "undefined") output.push("[DEBUG] worldSummary: " + worldSummary);
+
   const personal = state.reputation || {};
-  const personalSummary = `Charmer:${personal.Charmer} Honorable:${personal.Honorable} Rogue:${personal.Rogue} Dominant:${personal.Dominant} Submissive:${personal.Submissive} Prankster:${personal.Prankster}`;
+  const personalSummary = `Charmer:${personal.Charmer || 0} Honorable:${personal.Honorable || 0} Rogue:${personal.Rogue || 0} Dominant:${personal.Dominant || 0} Submissive:${personal.Submissive || 0} Prankster:${personal.Prankster || 0} Curious:${personal.Curious || 0} Innocent:${personal.Innocent || 0} Mischievous:${personal.Mischievous || 0} Affectionate:${personal.Affectionate || 0} Defiant:${personal.Defiant || 0} Brave:${personal.Brave || 0} Clever:${personal.Clever || 0} Playful:${personal.Playful || 0}`;
+  if (typeof output !== "undefined") output.push("[DEBUG] personalSummary: " + personalSummary);
 
+  // --- Clock String ---
+  let clockString = typeof getClockString === "function"
+    ? getClockString()
+    : (globalThis.getClockString ? globalThis.getClockString() : "");
+
+  let timeSummary = "";
+  if (clockString) timeSummary = `It is currently ${clockString}.`;
+
+  // --- Instructions ---
+  // --- You will have to change this to fit your scenarios. Fill free to change it up add wild quirks try and get ii to change how the AI acts.😁😁😎
   const instructions = `
-You are the narrator and game master.
-Write in second-person present tense.
-Use the reputation summaries below to influence how the world and characters react.
-Do not state numeric values directly unless contextually justified.
-Use world reputation to shape political, factional, or widespread responses.
-Use personal reputation to flavor interpersonal relationships and tone.
-Always show, don't tell; infer reputation reactions through narrative.
-`.trim();
+You are the narrative voice for a dynamic AI Dungeon demo scenario powered by the ReputeX system.
 
+Write in second person present tense, focusing on introspective, emotionally rich, and immersive storytelling. Use cinematic descriptions, emphasize character relationships, and allow the world to react to the player's evolving personality and reputation.
+
+Scenario:
+The player awakens in a mysterious new setting with no memory of how they arrived—only that they were someone else before. The world is reactive, shaped by faction dynamics, personal choices, and the player's emotional presence. Where and who they are is left for them to discover.
+
+Core Rules:
+- Let the player define who they are through their choices, dialogue, and actions.
+- Begin with a flexible opening: a street, a forest, a palace, or prison. Leave space for genre to evolve naturally.
+- Reflect the player's personality and world/faction reputation dynamically using the ReputeX system.
+- Never railroad the player—events should unfold logically based on cause and effect.
+- Let characters respond to what is said, done, and implied. No one reads minds.
+
+Reputation & Personality:
+- Track world and personal reputation using ReputeX.
+- Allow any of the following traits to evolve:
+    🧡 Charmer • 🛡️ Honorable • 🐍 Rogue • 🦁 Dominant • 🐑 Submissive • 🎭 Prankster  
+    🧠 Clever • 🧒 Curious • 🍼 Innocent • 😈 Mischievous • 🤗 Affectionate • 😤 Defiant • 💪 Brave • 🧪 Playful
+- React to threshold behaviors:
+    • 3+: Minor shifts in NPC reactions, tone, and story paths.
+    • 6+: Significant change; open/close story threads or factions.
+    • 9+: World-shaking shifts; unlocks powerful consequences, fame, fear, or devotion.
+
+Tone & Style:
+- Second person, immersive narration only.
+- No modern references unless introduced by the player.
+- Emphasize relationships, nuance, and social consequences.
+- Romance and deep bonds emerge through consistent interaction, not authorial force.
+- Mystery, magic, or tech can be present—subtle, powerful, and mysterious.
+
+**Author’s Note:**  
+This scenario is a freeform demo of the ReputeX system. Let the player's personality shape the story. Prioritize immersive tone, authentic reactions, and dynamic evolution. Never assume the player's intent—always leave space for choice and expression. All narration is second person and grounded in-world.
+
+**DO NOT break immersion. Do not use out-of-world, OOC, or game terminology.**
+(Show or describe personality/reputation shifts narratively. Never show raw stat numbers unless the player asks in-character.)
+  `.trim();
+
+  if (typeof output !== "undefined") output.push("[DEBUG] instructions set.");
+
+  // --- AutoCards for Context ---
+  let stop = '';
+  [text, stop] = AutoCards("context", text, stop);  //<== IF NOT USING AUTO-CARDS, REMOVE!!
+  if (typeof text !== "string") {
+    text = typeof text === "object" && text.text ? text.text : String(text);
+  }
+  if (typeof output !== "undefined") output.push("[DEBUG] AutoCards processed.");
+
+  // --- Compose Final Output ---
   return {
     text: [
       instructions,
       `[World Reputation Summary] ${worldSummary}`,
       `[Personal Reputation Summary] ${personalSummary}`,
-      text
-    ].join("\n\n")
+      timeSummary,
+      text,
+      clockString ? `[Clock]: ${clockString}` : ""
+    ].filter(Boolean).join("\n\n")
   };
 };
 
