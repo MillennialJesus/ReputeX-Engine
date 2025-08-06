@@ -1,70 +1,263 @@
-// === Output Modifier ===
 const modifier = (text) => {
+  // === World & Personal Reputation Init and DEBUG ===
+  initWorldReputation(state);
+  initPersonalReputation(state);
+  if (typeof output !== "undefined") output.push("[DEBUG] Output Modifier Start");
+if (typeof checkHybridJobUnlocks === "undefined") {
+  function checkHybridJobUnlocks() {}
+}
+if (typeof pickHybridReaction === "undefined") {
+  function pickHybridReaction() { return ""; }
+}
+
   const worldDelta = state.lastWorldReputationChange || {};
   const personalDelta = state.lastPersonalReputationChange || {};
   const rep = state.reputation || {};
   let changes = [];
 
+  // --- Reputation Change Displays
   const worldChanged = Object.keys(worldDelta).length > 0;
   const personalChanged = Object.keys(personalDelta).length > 0;
 
-  // === World Reputation Changes
+  if (typeof output !== "undefined") output.push("[DEBUG] worldDelta: " + JSON.stringify(worldDelta));
+  if (typeof output !== "undefined") output.push("[DEBUG] personalDelta: " + JSON.stringify(personalDelta));
+  if (typeof output !== "undefined") output.push("[DEBUG] reputation: " + JSON.stringify(rep));
+
   if (worldChanged) {
     const worldChanges = Object.entries(worldDelta)
       .map(([faction, delta]) => `${faction} ${delta >= 0 ? "+" : ""}${delta}`)
       .join("  ");
     changes.push(`[World Reputation Change] ${worldChanges}`);
     changes.push(`[World Reputation] ${getReputationSummary(state)}`);
+    if (typeof output !== "undefined") output.push("[DEBUG] Pushed world rep changes.");
   }
 
-  // === Personal Reputation Changes
   if (personalChanged) {
     const personalChanges = Object.entries(personalDelta)
       .map(([cat, delta]) => `${cat} ${delta >= 0 ? "+" : ""}${delta}`)
       .join("  ");
-    const personalSummary = `[Personal Reputation] Charmer:${rep.Charmer || 0} Honorable:${rep.Honorable || 0} Rogue:${rep.Rogue || 0} Dominant:${rep.Dominant || 0} Submissive:${rep.Submissive || 0} Prankster:${rep.Prankster || 0}`;
+    const personalSummary = `[Personal Reputation] 🧡:${rep.Charmer || 0} 🛡️:${rep.Honorable || 0} 🕶️:${rep.Rogue || 0} 👑:${rep.Dominant || 0} 🧎:${rep.Submissive || 0} 🎭:${rep.Prankster || 0} 🔍:${rep.Curious || 0} 👼:${rep.Innocent || 0} 😈:${rep.Mischievous || 0} 💞:${rep.Affectionate || 0} ✊:${rep.Defiant || 0} 🦁:${rep.Brave || 0} 🧠:${rep.Clever || 0} 🤹:${rep.Playful || 0}`;
     changes.push(`[Personal Reputation Change] ${personalChanges}`);
     changes.push(personalSummary);
   }
 
-  // === NPC Reactions based on Personal Rep
+  state.unlockedJobs = checkJobUnlocks(
+    state.reputation,
+    state.storyFlags || {},
+    state.unlockedJobs || {}
+  );
+  checkHybridJobUnlocks(state.unlockedJobs, state);
+
+  // --- NPC Reactions ---
   let reactionLine = "";
+  const age = (state.ages?.player ?? 0);
+  const style = state.narrationStyle || "classic";
+
+// --- Legendary/Unique Reactions (highest priority) ---
+if (
+  rep.Honorable >= 80 &&
+  rep.Dominant >= 80 &&
+  rep.Charmer >= 70 &&
+  getAgeBracket(age) === "adult"
+) {
+  reactionLine = pickLine(legendaryLawbringerLines, style);
+}
+else if (
+  rep.Rogue >= 65 &&
+  rep.Prankster >= 60 &&
+  rep.Clever >= 55 &&
+  (getAgeBracket(age) === "youth" || getAgeBracket(age) === "adult")
+) {
+  reactionLine = pickLine(infamousTricksterLines, style);
+}
+else if (
+  rep.Curious >= 75 &&
+  rep.Clever >= 75 &&
+  rep.Brave >= 60 &&
+  (getAgeBracket(age) === "youth" || getAgeBracket(age) === "adult")
+) {
+  reactionLine = pickLine(geniusExplorerLines, style);
+}
+else if (
+  rep.Charmer >= 80 &&
+  rep.Honorable >= 65 &&
+  getAgeBracket(age) === "adult"
+) {
+  reactionLine = pickLine(patronOfTheArtsLines, style);
+}
+else if (
+  rep.Honorable >= 65 &&
+  rep.Clever >= 70 &&
+  rep.Dominant >= 60 &&
+  getAgeBracket(age) === "adult"
+) {
+  reactionLine = pickLine(visionaryReformerLines, style);
+}
+else if (
+  rep.Rogue >= 75 &&
+  rep.Honorable <= -30 &&
+  rep.Clever >= 60 &&
+  getAgeBracket(age) === "adult"
+) {
+  reactionLine = pickLine(poisonerLines, style);
+}
+else if (
+  rep.Charmer >= 90 &&
+  rep.Submissive >= 60 &&
+  rep.Dominant <= 20 &&
+  getAgeBracket(age) === "adult"
+) {
+  reactionLine = pickLine(courtierLines, style);
+}
+else if (
+  rep.Clever >= 65 &&
+  rep.Curious >= 60 &&
+  (getAgeBracket(age) === "child" || getAgeBracket(age) === "youth")
+) {
+  reactionLine = pickLine(childProdigyLines, style);
+}
+else if (
+  rep.Innocent >= 70 &&
+  rep.Affectionate >= 70 &&
+  getAgeBracket(age) === "child"
+) {
+  reactionLine = pickLine(saintlyInnocentLines, style);
+}
+
+// --- High-Value Pair & Peak Trait Reactions (if none above matched) ---
+if (!reactionLine) {
+  if (rep.Charmer >= 25 && rep.Honorable >= 26) {
+    reactionLine = pickLine(charmerHonorableLines, style);
+  }
+  else if (rep.Dominant >= 24 && rep.Charmer >= 26) {
+    reactionLine = pickLine(dominantCharmerLines, style);
+  }
+  else if (rep.Clever >= 27 && rep.Honorable >= 27) {
+    reactionLine = pickLine(cleverHonorableLines, style);
+  }
+  else if (rep.Innocent >= 16 && rep.Affectionate >= 26) {
+    reactionLine = pickLine(innocentAffectionatePeakLines, style);
+  }
+  else if (rep.Curious >= 27 && rep.Clever >= 26) {
+    reactionLine = pickLine(curiousCleverPeakLines, style);
+  }
+  else if (rep.Dominant >= 29 && rep.Honorable >= 27) {
+    reactionLine = pickLine(sternHonorableLines, style);
+  }
+  else if (rep.Prankster >= 27 && rep.Playful >= 26) {
+    reactionLine = pickLine(pranksterPlayfulLines, style);
+  }
+  else if (rep.Affectionate >= 14) {
+    reactionLine = pickLine(affectionatePeakLines, style);
+  }
+  else if (rep.Curious >= 16) {
+    reactionLine = pickLine(curiousPeakLines, style);
+  }
+  else if (rep.Dominant >= 15) {
+    reactionLine = pickLine(dominantPeakLines, style);
+  }
+  else if (rep.Charmer >= 19) {
+    reactionLine = getCharmerPeakLine(age, style);
+  }
+  else if (rep.Innocent >= 19) {
+    reactionLine = pickLine(innocentPeakLines, style);
+  }
+}
+
+// --- Base Reputation Pair Reactions (if STILL none matched) ---
+if (!reactionLine) {
   if (rep.Charmer >= 6 && rep.Dominant >= 3) {
-    reactionLine = "People notice your confident charm. The merchant smiles, but keeps his words careful and respectful.";
+    reactionLine = pickLine(charmerDominantLines, style);
   }
-  if (reactionLine) text = `${reactionLine}\n\n${text}`;
+  else if (rep.Honorable >= 5 && rep.Submissive >= 3) {
+    reactionLine = pickLine(honorableSubmissiveLines, style);
+  }
+  else if (rep.Rogue >= 5 && rep.Prankster >= 3) {
+    reactionLine = pickLine(roguePranksterLines, style);
+  }
+  else if (rep.Curious >= 5 && rep.Clever >= 3) {
+    reactionLine = pickLine(curiousCleverLines, style);
+  }
+  else if (rep.Innocent >= 5 && rep.Affectionate >= 4) {
+    reactionLine = pickLine(innocentAffectionateLines, style);
+  }
+  else if (rep.Mischievous >= 5 && rep.Playful >= 4) {
+    reactionLine = pickLine(mischievousPlayfulLines, style);
+  }
+  else if (rep.Brave >= 5 && rep.Defiant >= 4) {
+    reactionLine = pickLine(braveDefiantLines, style);
+  }
+  else if (rep.Clever >= 5 && rep.Defiant >= 3) {
+    reactionLine = pickLine(cleverDefiantLines, style);
+  }
+  else if (rep.Playful >= 5 && rep.Affectionate >= 3) {
+    reactionLine = pickLine(playfulAffectionateLines, style);
+  }
+}
 
-  // === Special Event Triggers
-  if (!state.storyEvents) state.storyEvents = {};
-
-  if (
-    rep.Honorable >= 5 &&
-    rep.Prankster >= 3 &&
-    !state.storyEvents.festivalInvite
-  ) {
-    state.storyEvents.festivalInvite = true;
-    changes.push("A group of laughing townsfolk approach you, asking if you'll help with the upcoming Festival of Whimsy. 'We need someone who's both noble... and just a bit of trouble.'");
+  // --- Output only if changed since last reaction ---
+  if (reactionLine && reactionLine !== state.lastReactionLine) {
+    text = `${reactionLine}\n\n${text}`;
+    state.lastReactionLine = reactionLine;
   }
 
-  // === Titles / Achievements
-  if (
-    (rep.Charmer + rep.Honorable >= 10) &&
-    state.lastInteraction?.includes("daughter") &&
-    !state.earnedTitles?.paragonOfParenthood
-  ) {
-    if (!state.earnedTitles) state.earnedTitles = {};
-    state.earnedTitles.paragonOfParenthood = true;
-    changes.push("[Title Earned] Paragon of Parenthood: Families speak your name with reverence. Children trust you, and parents seek your wisdom.");
+  // --- Hybrid Job List to Output ---
+  const hybridList = Object.keys(state.hybridJobs || {})
+    .map(flag => HYBRID_JOBS.find(h => h.unlockFlag === flag)?.name)
+    .filter(Boolean);
+  if (hybridList.length) {
+    changes.push(`[Hybrid Jobs] ${hybridList.join(", ")}`);
   }
 
-  // === Clear deltas after processing
+  // --- Example: pick a reaction if Charmer or Prankster went up ---
+  let lastChange = state.lastPersonalReputationChange || {};
+  let phrase = "";
+
+  if (lastChange.Charmer > 0) {
+    phrase = reactionPhrases.Charmer.Positive[
+      Math.floor(Math.random() * reactionPhrases.Charmer.Positive.length)
+    ];
+  }
+  else if (lastChange.Prankster > 0) {
+    phrase = reactionPhrases.Prankster.Positive[
+      Math.floor(Math.random() * reactionPhrases.Prankster.Positive.length)
+    ];
+  }
+  if (phrase) {
+    text = insertNPCReaction(text, phrase);
+  }
+
+  // --- Clear rep deltas ---
   state.lastWorldReputationChange = {};
   state.lastPersonalReputationChange = {};
+  if (typeof output !== "undefined") output.push("[DEBUG] Cleared rep deltas.");
 
-  // === Final Output
-  return {
-    text: changes.length > 0 ? [text, ...changes].join("\n\n") : text
-  };
+  // --- Apply Auto-Cards ---
+  text = AutoCards("output", text);
+  if (typeof output !== "undefined") output.push("[DEBUG] AutoCards applied.");
+
+  // === Clock/Status Bar ===
+  let statusBar = "";
+  if (text && text.trim()) {
+    let clockString = typeof getClockString === "function"
+      ? getClockString()
+      : (globalThis.getClockString ? globalThis.getClockString() : "");
+    let minutesInfo = "";
+    if (typeof state !== "undefined" && state.lastActionMinutes !== undefined) {
+      minutesInfo = ` (Action took ${state.lastActionMinutes} minute${state.lastActionMinutes !== 1 ? "s" : ""})`;
+    }
+    if (clockString) statusBar = `[🕒 ${clockString}]${minutesInfo}\n`;
+  }
+
+  // --- Output DEBUG End ---
+  if (typeof output !== "undefined") output.push("[DEBUG] Output Modifier End");
+
+  // --- Final output, stacking all pieces in order ---
+  let outText = statusBar + text;
+  if (changes.length > 0) outText = [outText, ...changes].join("\n\n");
+
+  return { text: outText };
 };
-  // Don't modify this part
-  modifier(text);
+
+// Don't modify this part
+modifier(text);
