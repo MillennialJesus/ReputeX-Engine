@@ -24,8 +24,7 @@ To use ReputeX in your scenario, you MUST:
 Define Your Factions
 
 In your Shared Library pane, create your world’s factions and set initial reputation values for each:
-```
-js
+``` js
 state.factions = {
   "NCR": 0,
   "Legion": 0,
@@ -36,10 +35,7 @@ state.factions = {
 Set Up the World Clock
 
 The engine expects a state.worldClock object:
-```
-js
-Copy
-Edit
+``` js
 state.worldClock = { year: 1454, month: 3, day: 27, hour: 7, minute: 0 };
 ```
 You can set your own start date/time.
@@ -93,10 +89,7 @@ Output Modifier:
 Displays rep changes, hybrid unlocks, time status, and NPC reactions.
 
 🧩 Example: Quick Start
-```
-js
-Copy
-Edit
+``` js
 // In Shared Library
 state.factions = { "NCR": 0, "Legion": 0 };
 state.worldClock = { year: 1454, month: 1, day: 1, hour: 8, minute: 0 };
