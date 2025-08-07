@@ -1301,5 +1301,3 @@ const reactionPhrases = {
 globalThis.actionMinutes = actionMinutes;
 globalThis.actionRegexList = actionRegexList;
 globalThis.getCompoundActionMinutes = getCompoundActionMinutes;
-  }
-};
