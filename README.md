@@ -16,7 +16,7 @@ Tracks world time in `YYYY-MM-DD HH:MM` format. Advances with player actions or 
 
 🧩 Fully Modular Design:
 Easy to integrate—plug and play with custom scenarios.
-You’ll still need to configure world time, define your factions, and set any custom values for your scenario!
+`You’ll still need to configure world time, define your factions, and set any custom values for your scenario!`
 
 ⚙️ Setup & Required Changes
 To use ReputeX in your scenario, you MUST:
