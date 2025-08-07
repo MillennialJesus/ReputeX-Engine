@@ -42,24 +42,24 @@ You can set your own start date/time.
 
 Customize Reputation Categories (Optional)
 
-The Personal Reputation Engine supports traits like Charmer, Honorable, Dominant, etc.
+The Personal Reputation Engine supports traits like `Charmer`, `Honorable`, `Dominant`, etc.
 
-If you want custom traits or unique behaviors, edit/add to the PERSONAL_REP_PATTERNS in the Shared Library.
+If you want custom traits or unique behaviors, edit/add to the `PERSONAL_REP_PATTERNS` in the Shared Library.
 
 Adjust Lexicon/Regex Patterns (Optional)
 
-To match your scenario’s tone or add custom phrases, expand PERSONAL_REP_PATTERNS and/or the Lexicon.
+To match your scenario’s tone or add custom phrases, expand `PERSONAL_REP_PATTERNS` and/or the Lexicon.
 
 Configure Faction Logic (Optional)
 
-For special rules (e.g., mutually exclusive factions, unique win/loss conditions), update canStartQuest, isHostile, etc.
+For special rules (e.g., mutually exclusive factions, unique win/loss conditions), update `canStartQuest`, `isHostile`, etc.
 
 Import ALL ReputeX Helper Functions
 
 IMPORTANT:
-Place all core engine functions (initWorldReputation, initPersonalReputation, getClockString, time-skip/advance helpers, etc.) in your Shared Library pane.
+Place all core engine functions (`initWorldReputation`, `initPersonalReputation`, `getClockString`, `time-skip/advance helpers`, etc.) in your Shared Library pane.
 
-If your scripting engine does NOT share functions between panes, copy necessary helpers into Input/Output Modifiers.
+If your scripting engine `does NOT` share functions between panes, copy necessary helpers into Input/Output Modifiers.
 
 Integrate Output/Context/UI Formatting
 
@@ -69,24 +69,24 @@ Adjust output formatting for your scenario’s style.
 
 [OPTIONAL] Modular Extensions
 
-Add world events, milestone triggers, hybrid jobs, or custom NPC reactions using your scenario’s needs.
+Add `world events`, `milestone triggers`, `hybrid jobs`, or custom `NPC reactions` using your scenario’s needs.
 
 For advanced features (AutoCards, etc.), follow extension documentation.
 
 🔄 Required File/Panes Structure
 Typical AI Dungeon scenario setup:
 
-Shared Library:
-ReputeX Core, all helper functions, Lexicons, and shared state.
+`Shared Library:
+ReputeX Core, all helper functions, Lexicons, and shared state.`
 
-Input Modifier:
-Parses player input, applies personal/faction rep changes, handles time advancement.
+`Input Modifier:
+Parses player input, applies personal/faction rep changes, handles time advancement.`
 
-Context Modifier:
-Sets up instructions, reputation summaries, and optional clock info.
+`Context Modifier:
+Sets up instructions, reputation summaries, and optional clock info.`
 
-Output Modifier:
-Displays rep changes, hybrid unlocks, time status, and NPC reactions.
+`Output Modifier:
+Displays rep changes, hybrid unlocks, time status, and NPC reactions.`
 
 🧩 Example: Quick Start
 ``` js
