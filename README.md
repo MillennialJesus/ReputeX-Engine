@@ -6,13 +6,13 @@ A modular, AI-driven reputation and language engine for dynamic, immersive story
 Tracks global faction reputation based on player actions using tag-based Lexicon parsing.
 
 🧍 Personal Reputation Engine:
-Dynamically adjusts interpersonal traits (Charmer, Honorable, Dominant, Submissive, Prankster, etc.) based on player dialogue and behavior.
+Dynamically adjusts interpersonal traits (`Charmer`, `Honorable`, `Dominant`, `Submissive`, `Prankster`, etc.) based on player dialogue and behavior.
 
 🔍 Regex-Driven Lexicons:
 Advanced regular expressions detect player intent and emotional tone from natural language input.
 
 🕛 World Clock:
-Tracks world time in YYYY-MM-DD HH:MM format. Advances with player actions or dialogue.
+Tracks world time in `YYYY-MM-DD HH:MM` format. Advances with player actions or dialogue.
 
 🧩 Fully Modular Design:
 Easy to integrate—plug and play with custom scenarios.
