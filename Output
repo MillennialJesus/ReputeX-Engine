@@ -233,7 +233,7 @@ if (!reactionLine) {
   if (typeof output !== "undefined") output.push("[DEBUG] Cleared rep deltas.");
 
   // --- Apply Auto-Cards ---
-  text = AutoCards("output", text);
+  text = AutoCards("output", text); //<==🚨REMOVE IF NOT USING AUTO-CARDS!!🚨
   if (typeof output !== "undefined") output.push("[DEBUG] AutoCards applied.");
 
   // === Clock/Status Bar ===
