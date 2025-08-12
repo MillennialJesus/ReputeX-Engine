@@ -1,7 +1,7 @@
 // === Shared Library: Universal Reputation System (URS) ===
 // === Credit & Collaboration ===
 // This engine was built in collaboration with Lothens, whose Personal Reputation Tracker formed a core part of the system’s design.
-// It also incorporates the Mini Language Engine (MLE) originally developed by LewdLeah, enabling dynamic narrative behavior and prose consistency.
+// With calls to Auto-Cards in the Input/context/output scripts, originally developed by LewdLeah.
 // Deep thanks to both creators for their contributions—this system would not exist without their foundational work.
 
 if (!state.worldClock) {
