@@ -123,7 +123,7 @@ const modifier = (text) => {
   if (typeof output !== "undefined") output.push("[DEBUG] Input Modifier END");
 
   // === AutoCards (Input) ===
-  text = AutoCards("input", text);  //<==IF NOT USING AUTO-CARDS, REMOVE!!
+  text = AutoCards("input", text);  //<==🚨IF NOT USING AUTO-CARDS, REMOVE🚨!!
 
   return { text };
 };
