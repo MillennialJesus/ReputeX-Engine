@@ -77,6 +77,11 @@ For advanced features (AutoCards, etc.), follow extension documentation.
 // === AutoCards (Input) ===
   text = AutoCards("input", text);  //<==🚨IF NOT USING AUTO-CARDS, REMOVE🚨!!
 ```
+```
+ // --- AutoCards for Context ---
+  let stop = '';
+  [text, stop] = AutoCards("context", text, stop);  //<== 🚨IF NOT USING AUTO-CARDS, REMOVE!!🚨
+```
 🔄 Required File/Panes Structure
 Typical AI Dungeon scenario setup:
 
