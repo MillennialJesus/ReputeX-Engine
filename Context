@@ -69,7 +69,7 @@ This scenario is a freeform demo of the ReputeX system. Let the player's persona
 
   // --- AutoCards for Context ---
   let stop = '';
-  [text, stop] = AutoCards("context", text, stop);  //<== IF NOT USING AUTO-CARDS, REMOVE!!
+  [text, stop] = AutoCards("context", text, stop);  //<== 🚨IF NOT USING AUTO-CARDS, REMOVE!!🚨
   if (typeof text !== "string") {
     text = typeof text === "object" && text.text ? text.text : String(text);
   }
