@@ -122,7 +122,7 @@ state.worldClock = { year: 1454, month: 1, day: 1, hour: 8, minute: 0 };
 
 Lothens – Personal Reputation Tracker foundation
 
-LewdLeah – Mini Language Engine (MLE) system (coming soon!)
+LewdLeah – Auto-Cards call (Mini Language Engine (MLE) system; hopefully coming soon!)
 
 MillennialJesus – Core integration, modular architecture, system expansion
 
