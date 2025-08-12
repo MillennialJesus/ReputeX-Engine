@@ -82,6 +82,11 @@ For advanced features (AutoCards, etc.), follow extension documentation.
   let stop = '';
   [text, stop] = AutoCards("context", text, stop);  //<== 🚨IF NOT USING AUTO-CARDS, REMOVE!!🚨
 ```
+```
+  // --- Apply Auto-Cards ---
+  text = AutoCards("output", text); //<==🚨REMOVE IF NOT USING AUTO-CARDS!!🚨
+  if (typeof output !== "undefined") output.push("[DEBUG] AutoCards applied.");
+```
 🔄 Required File/Panes Structure
 Typical AI Dungeon scenario setup:
 
