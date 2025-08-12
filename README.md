@@ -73,7 +73,10 @@ Adjust output formatting for your scenario’s style.
 Add `world events`, `milestone triggers`, `hybrid jobs`, or custom `NPC reactions` using your scenario’s needs.
 
 For advanced features (AutoCards, etc.), follow extension documentation.
-
+```
+// === AutoCards (Input) ===
+  text = AutoCards("input", text);  //<==🚨IF NOT USING AUTO-CARDS, REMOVE🚨!!
+```
 🔄 Required File/Panes Structure
 Typical AI Dungeon scenario setup:
 
