@@ -1,29 +1,3 @@
-// === Context Modifier (Merged) ===
-const modifier = (text) => {
-  if (typeof output !== "undefined") output.push("[DEBUG] Context Modifier started");
-
-  // --- Reputation System ---
-  initWorldReputation(state);
-  if (typeof output !== "undefined") output.push("[DEBUG] After initWorldReputation: " + JSON.stringify(state.reputation));
-  initPersonalReputation(state);
-  if (typeof output !== "undefined") output.push("[DEBUG] After initPersonalReputation: " + JSON.stringify(state.reputation));
-
-  // --- Summaries ---
-  const worldSummary = getReputationSummary(state);
-  if (typeof output !== "undefined") output.push("[DEBUG] worldSummary: " + worldSummary);
-
-  const personal = state.reputation || {};
-  const personalSummary = `Charmer:${personal.Charmer || 0} Honorable:${personal.Honorable || 0} Rogue:${personal.Rogue || 0} Dominant:${personal.Dominant || 0} Submissive:${personal.Submissive || 0} Prankster:${personal.Prankster || 0} Curious:${personal.Curious || 0} Innocent:${personal.Innocent || 0} Mischievous:${personal.Mischievous || 0} Affectionate:${personal.Affectionate || 0} Defiant:${personal.Defiant || 0} Brave:${personal.Brave || 0} Clever:${personal.Clever || 0} Playful:${personal.Playful || 0}`;
-  if (typeof output !== "undefined") output.push("[DEBUG] personalSummary: " + personalSummary);
-
-  // --- Clock String ---
-  let clockString = typeof getClockString === "function"
-    ? getClockString()
-    : (globalThis.getClockString ? globalThis.getClockString() : "");
-
-  let timeSummary = "";
-  if (clockString) timeSummary = `It is currently ${clockString}.`;
-
   // --- Instructions ---
   // --- You will have to change this to fit your scenarios. Fill free to change it up add wild quirks try and get ii to change how the AI acts.😁😁😎
   const instructions = `
@@ -65,7 +39,31 @@ This scenario is a freeform demo of the ReputeX system. Let the player's persona
 (Show or describe personality/reputation shifts narratively. Never show raw stat numbers unless the player asks in-character.)
   `.trim();
 
-  if (typeof output !== "undefined") output.push("[DEBUG] instructions set.");
+// === Context Modifier (Merged) ===
+const modifier = (text) => {
+  if (typeof output !== "undefined") output.push("[DEBUG] Context Modifier started");
+
+  // --- Reputation System ---
+  initWorldReputation(state);
+  if (typeof output !== "undefined") output.push("[DEBUG] After initWorldReputation: " + JSON.stringify(state.reputation));
+  initPersonalReputation(state);
+  if (typeof output !== "undefined") output.push("[DEBUG] After initPersonalReputation: " + JSON.stringify(state.reputation));
+
+  // --- Summaries ---
+  const worldSummary = getReputationSummary(state);
+  if (typeof output !== "undefined") output.push("[DEBUG] worldSummary: " + worldSummary);
+
+  const personal = state.reputation || {};
+  const personalSummary = `Charmer:${personal.Charmer || 0} Honorable:${personal.Honorable || 0} Rogue:${personal.Rogue || 0} Dominant:${personal.Dominant || 0} Submissive:${personal.Submissive || 0} Prankster:${personal.Prankster || 0} Curious:${personal.Curious || 0} Innocent:${personal.Innocent || 0} Mischievous:${personal.Mischievous || 0} Affectionate:${personal.Affectionate || 0} Defiant:${personal.Defiant || 0} Brave:${personal.Brave || 0} Clever:${personal.Clever || 0} Playful:${personal.Playful || 0}`;
+  if (typeof output !== "undefined") output.push("[DEBUG] personalSummary: " + personalSummary);
+
+  // --- Clock String ---
+  let clockString = typeof getClockString === "function"
+    ? getClockString()
+    : (globalThis.getClockString ? globalThis.getClockString() : "");
+
+  let timeSummary = "";
+  if (clockString) timeSummary = `It is currently ${clockString}.`;
 
   // --- AutoCards for Context ---
   let stop = '';
