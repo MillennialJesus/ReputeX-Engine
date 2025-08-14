@@ -283,7 +283,7 @@ function timeSkip({days = 0, months = 0, years = 0} = {}) {
     }
   }
   // Fallback: If nothing matched, it's a minor action
-  if (minutes === 0) return actionMinutes.minor || 5;
+  if (minutes === 0) return actionMinutes.minor || 1;
   return minutes;
 }
 
@@ -297,7 +297,7 @@ const actionMinutes = {
   sing: 8, dance: 12, game: 15, listenmusic: 8, perform: 25, watch: 10, fish: 30, picnic: 40, gamble: 20, drinkalcohol: 30,
   fight: 8, battle: 10, spar: 12, duel: 12, hunt: 35, escape: 7, steal: 5, spy: 15, patrol: 25,
   cast: 12, ritual: 30, summon: 18, heal: 8, bless: 5, curse: 7, scry: 10, brewpotion: 15, commune: 12,
-  minor: 5
+  minor: 1
 };
 
 const actionRegexList = [
@@ -584,7 +584,7 @@ function modifyPersonalReputation(text, state) {
           let delta = Math.sign(p.changes[cat]); // Only ±1 per trigger
           let next = current + delta;
           // Clamp to [-3, 3] for infants
-          state.reputation[cat] = Math.max(-6, Math.min(6, next));
+          state.reputation[cat] = Math.max(-3, Math.min(3, next));
         } else {
           // Normal gain for non-infants
           state.reputation[cat] = (state.reputation[cat] || 0) + p.changes[cat];
@@ -816,11 +816,6 @@ const HYBRID_JOBS = [
     description: "You blend the cunning of a Phantom King and the wisdom of a Sage. Rumor says you could steal the crown and explain quantum mechanics at the same time.",
     requiredJobs: ["job_phantom_king", "job_sage_of_wonders"],
     unlockFlag: "job_shadow_savant",
-    reactionLines: [
-      "Whispers spread of your dual talents—no lock nor puzzle stays closed for long.",
-      "Scholars and thieves alike respect your genius. Some even fear it.",
-      "You walk in shadows and light with equal mastery. No secret is safe."
-    ]
   },
   {
     key: "muse_of_mayhem",
@@ -828,11 +823,6 @@ const HYBRID_JOBS = [
     description: "The Trickster Spirit and Muse have combined—now, your pranks are legend *and* art. The city laughs... and trembles.",
     requiredJobs: ["job_trickster_spirit", "job_muse"],
     unlockFlag: "job_muse_of_mayhem",
-    reactionLines: [
-      "Your artistry and mischief are indistinguishable; chaos is your canvas.",
-      "Even nobles check their chairs and marvel at your creative madness.",
-      "Bards can’t keep up—you invent new legends daily."
-    ]
   },
   // New:
   {
@@ -841,11 +831,6 @@ const HYBRID_JOBS = [
     description: "You are both Saint and Phantom King—a living contradiction: thief of hearts, savior of souls.",
     requiredJobs: ["job_saint", "job_phantom_king"],
     unlockFlag: "job_lawless_saint",
-    reactionLines: [
-      "The underworld bows and the pious whisper prayers in your name.",
-      "Miracles and mischief follow you in equal measure.",
-      "Even the gods seem unsure what to make of you."
-    ]
   },
   {
     key: "artisan_of_secrets",
@@ -853,11 +838,6 @@ const HYBRID_JOBS = [
     description: "As a Master of Revels and a Master of Secrets, you craft both laughter and lies with equal artistry.",
     requiredJobs: ["job_master_of_revels", "job_master_of_secrets"],
     unlockFlag: "job_artisan_of_secrets",
-    reactionLines: [
-      "Your tricks are masterpieces, your secrets works of art.",
-      "Rivals are never sure if they're being mocked or marveled at.",
-      "Even spies try to learn from your performances."
-    ]
   },
   {
     key: "hearth_and_blade",
@@ -865,11 +845,6 @@ const HYBRID_JOBS = [
     description: "Legendary Guardian and Matron Saint—your strength is matched only by your care.",
     requiredJobs: ["job_legendary_guardian", "job_matron_saint"],
     unlockFlag: "job_hearth_and_blade",
-    reactionLines: [
-      "Your shield is a home, your arms both sword and sanctuary.",
-      "Children sleep soundly when you watch the walls.",
-      "Enemies and orphans both find peace in your presence."
-    ]
   },
   {
     key: "miracle_magnate",
@@ -877,11 +852,6 @@ const HYBRID_JOBS = [
     description: "As Tycoon of Empires and Miracle Worker, you turn charity into prosperity, and business into legend.",
     requiredJobs: ["job_tycoon", "job_miracle_worker"],
     unlockFlag: "job_miracle_magnate",
-    reactionLines: [
-      "Your fortune is a blessing, your deals leave rivals grateful.",
-      "No one leaves your markets hungry or hopeless.",
-      "You redefine what it means to give and gain."
-    ]
   },
   {
     key: "brilliant_voyager",
@@ -889,11 +859,6 @@ const HYBRID_JOBS = [
     description: "Seeker of Lost Worlds and Sage of Wonders—you chart the unknown and unravel the universe’s mysteries.",
     requiredJobs: ["job_seeker_lost_worlds", "job_sage_of_wonders"],
     unlockFlag: "job_brilliant_voyager",
-    reactionLines: [
-      "Explorers quote your journals; scholars argue about your findings.",
-      "Every expedition is both legend and lesson.",
-      "You make the impossible seem like a well-worn road."
-    ]
   },
   {
     key: "festival_chancellor",
@@ -901,11 +866,6 @@ const HYBRID_JOBS = [
     description: "Grand Chancellor and Festival King/Queen—equal parts authority and fun.",
     requiredJobs: ["job_grand_chancellor", "job_festival_king"],
     unlockFlag: "job_festival_chancellor",
-    reactionLines: [
-      "Your decrees become parades; your judgments spark joy.",
-      "People cheer for your laws and your laughter.",
-      "The city celebrates whenever you rule."
-    ]
   },
   // Mythic/Triple-Class Example:
   {
@@ -914,11 +874,6 @@ const HYBRID_JOBS = [
     description: "You have achieved Sage of Wonders, Muse, and Savior of the Realm—a living legend of art, science, and heroism.",
     requiredJobs: ["job_sage_of_wonders", "job_muse", "job_savior_of_realm"],
     unlockFlag: "job_polymath_paragon",
-    reactionLines: [
-      "Your name lives in a hundred stories, across disciplines and dynasties.",
-      "To some you are a myth; to others, their greatest inspiration.",
-      "Even the gods pause to see what you’ll do next."
-    ]
   },
   {
     key: "foolsgold_oracle",
@@ -926,11 +881,6 @@ const HYBRID_JOBS = [
     description: "You are both Trickster Spirit, Tycoon, and Sage of the Age—fortune teller, fortune maker, and trickster prophet.",
     requiredJobs: ["job_trickster_spirit", "job_tycoon", "job_sage_of_the_age"],
     unlockFlag: "job_foolsgold_oracle",
-    reactionLines: [
-      "You predict the future—and profit from it, too.",
-      "No one knows whether your wisdom or your wallet is more impressive.",
-      "You turn riddles into riches, and fortunes into riddles."
-    ]
   },
     {
     key: "eternal_founder",
@@ -938,11 +888,6 @@ const HYBRID_JOBS = [
     description: "Guildmaster, Sage of the Age, and Savior of the Realm—your vision built the world, your wisdom guides it, your courage saves it.",
     requiredJobs: ["job_guildmaster", "job_sage_of_the_age", "job_savior_of_realm"],
     unlockFlag: "job_eternal_founder",
-    reactionLines: [
-        "Every hall echoes with your name. Legends say even history itself bends to your example.",
-        "Builders, heroes, and scholars all claim you as their inspiration.",
-        "When crises arise, all factions look to you—not just for answers, but for hope."
-    ]
     },
     {
     key: "courtly_trickster",
@@ -950,11 +895,6 @@ const HYBRID_JOBS = [
     description: "Festival King, Grand Chancellor, and Trickster Spirit—ruler, prankster, and master of revels, your court is legendary for chaos and celebration.",
     requiredJobs: ["job_festival_king", "job_grand_chancellor", "job_trickster_spirit"],
     unlockFlag: "job_courtly_trickster",
-    reactionLines: [
-        "Your parties last for days, your schemes for years. Nobles and jesters swap places in your halls.",
-        "Nobody is safe from your antics—or your wisdom.",
-        "You’ve turned the throne into a stage, and the city into a carnival."
-    ]
     },
     {
     key: "saint_of_the_hidden",
@@ -962,11 +902,6 @@ const HYBRID_JOBS = [
     description: "Matron Saint, Master of Secrets, and Shadowmaster—protector of the lost and forgotten, unseen guardian of the city’s darkest corners.",
     requiredJobs: ["job_matron_saint", "job_master_of_secrets", "job_shadowmaster"],
     unlockFlag: "job_saint_of_the_hidden",
-    reactionLines: [
-        "No shadow hides from your kindness—or your vigilance.",
-        "Rumors say you heal wounds even the city dares not speak of.",
-        "Your presence is felt most where hope is faintest."
-    ]
     },
     {
     key: "song_of_ages",
@@ -974,11 +909,6 @@ const HYBRID_JOBS = [
     description: "Muse, Grand Maestro, and Sage of the Age—your music outlasts empires, your poetry outlives kings.",
     requiredJobs: ["job_muse", "job_grand_maestro", "job_sage_of_the_age"],
     unlockFlag: "job_song_of_ages",
-    reactionLines: [
-        "Bards across the land claim your work as the beginning of their craft.",
-        "Rulers ask for your blessing; lovers quote your verses.",
-        "A single note from you can start or end a war."
-    ]
     },
     {
     key: "warlord_of_wonders",
@@ -986,11 +916,6 @@ const HYBRID_JOBS = [
     description: "Savior of the Realm, Court Engineer, and Shadowmaster—your inventions win wars, your leadership bends the impossible to your will.",
     requiredJobs: ["job_savior_of_realm", "job_court_engineer", "job_shadowmaster"],
     unlockFlag: "job_warlord_of_wonders",
-    reactionLines: [
-        "Enemy armies fear your machines more than any spell.",
-        "Cities prepare celebrations or fortifications at your approach—they never know which.",
-        "Your name is a rallying cry and a whispered warning."
-    ]
     },
     {
     key: "oracle_of_three_paths",
@@ -998,11 +923,6 @@ const HYBRID_JOBS = [
     description: "Saint, Tycoon, and Muse—the world’s richest sage, whose charity, wisdom, and artistry make kingdoms rise and fall.",
     requiredJobs: ["job_saint", "job_tycoon", "job_muse"],
     unlockFlag: "job_oracle_of_three_paths",
-    reactionLines: [
-        "No king or merchant dares ignore your advice.",
-        "Your prophecies inspire both awe and envy.",
-        "When you speak, gold and miracles change hands."
-    ]
     },
     {
     key: "indomitable_herald",
@@ -1010,11 +930,6 @@ const HYBRID_JOBS = [
     description: "Legendary Guardian, Grand Negotiator, and Master of Secrets—the unbreakable wall, the voice of reason, and the unseen hand.",
     requiredJobs: ["job_legendary_guardian", "job_grand_negotiator", "job_master_of_secrets"],
     unlockFlag: "job_indomitable_herald",
-    reactionLines: [
-        "Your enemies know resistance is futile; your allies know hope is never lost.",
-        "You settle wars before the first sword is drawn.",
-        "Even the city’s ghosts ask for your counsel."
-    ]
     },
     {
     key: "blessed_storm",
@@ -1022,11 +937,6 @@ const HYBRID_JOBS = [
     description: "Seeker of Lost Worlds, Miracle Worker, and Festival King/Queen—you bring change, healing, and celebration wherever you go.",
     requiredJobs: ["job_seeker_lost_worlds", "job_miracle_worker", "job_festival_king"],
     unlockFlag: "job_blessed_storm",
-    reactionLines: [
-        "Storms clear when you arrive, and rainbows follow your footsteps.",
-        "You heal not just wounds, but the world’s spirit.",
-        "Festivals spring up in your wake, and legends bloom anew."
-    ]
     },
     {
     key: "grand_polyarch",
@@ -1034,11 +944,6 @@ const HYBRID_JOBS = [
     description: "Polymath Paragon, Oracle of Three Paths, and Lawless Saint—there’s nothing you can’t become, no legend you can’t claim.",
     requiredJobs: ["job_polymath_paragon", "job_oracle_of_three_paths", "job_lawless_saint"],
     unlockFlag: "job_grand_polyarch",
-    reactionLines: [
-        "Your story is told as both myth and warning. Some say you embody destiny itself.",
-        "All roads, all legends, all fates bend around you.",
-        "If there is a limit, you haven’t found it yet."
-    ]
     },
     {
     key: "infinite_jester",
@@ -1046,11 +951,6 @@ const HYBRID_JOBS = [
     description: "Trickster Spirit, Master of Revels, and Muse of Mayhem—the joke is reality, and reality is your playground.",
     requiredJobs: ["job_trickster_spirit", "job_master_of_revels", "job_muse_of_mayhem"],
     unlockFlag: "job_infinite_jester",
-    reactionLines: [
-        "Your laughter echoes in every corner of the world.",
-        "No prank is too wild, no performance too impossible.",
-        "Reality itself seems to break into applause when you appear."
-    ]
     },
     {
     key: "legend_born_of_every_age",
@@ -1063,28 +963,18 @@ const HYBRID_JOBS = [
         "job_sage_of_wonders"
     ],
     unlockFlag: "job_legend_born_of_every_age",
-    reactionLines: [
-        "Old and young alike speak your name as a promise of what’s possible.",
-        "Every guild, hall, and council claims you as their own.",
-        "Songs, histories, and whispered stories all agree: you are living legend."
-    ]
     },
     {
     key: "mother_of_miracles",
     name: "Mother of Miracles",
-    description: "Healer, caretaker, saint, and miracle worker—your compassion is so great it seems to shape fate itself.",
     requiredJobs: [
         "job_miracle_worker",
         "job_matron_saint",
         "job_saint",
         "job_caretaker"
     ],
+    description: "Healer, caretaker, saint, and miracle worker—your compassion is so great it seems to shape fate itself.",
     unlockFlag: "job_mother_of_miracles",
-    reactionLines: [
-        "People journey for miles just to thank you in person.",
-        "Legends say your blessings heal more than bodies—they mend worlds.",
-        "Every child knows your name, and every mother wishes you’d watch over theirs."
-    ]
     },
     {
     key: "phantom_lawbringer",
@@ -1097,11 +987,6 @@ const HYBRID_JOBS = [
         "job_master_of_secrets"
     ],
     unlockFlag: "job_phantom_lawbringer",
-    reactionLines: [
-        "Nobles fear your judgments—and your heists.",
-        "You’re proof that justice can wear any mask.",
-        "Folk tales say even the gods can’t predict your next move."
-    ]
     },
     {
     key: "ultimate_scholar_wanderer",
@@ -1114,11 +999,6 @@ const HYBRID_JOBS = [
         "job_pathfinder"
     ],
     unlockFlag: "job_ultimate_scholar_wanderer",
-    reactionLines: [
-        "Your maps hang in every city, and your words guide every expedition.",
-        "It’s said you’ve seen wonders others only dream of—and can describe them all.",
-        "Even the oldest teachers look to you for new discoveries."
-    ]
     },
     {
     key: "ruler_of_every_masque",
@@ -1131,11 +1011,6 @@ const HYBRID_JOBS = [
         "job_muse"
     ],
     unlockFlag: "job_ruler_of_every_masque",
-    reactionLines: [
-        "Your parties are legend. Your pranks are feared.",
-        "Both poets and politicians line up for your favor.",
-        "The city wears a mask, but you know every face beneath."
-    ]
     },
     {
     key: "tyrant_of_silver_and_gold",
@@ -1148,11 +1023,6 @@ const HYBRID_JOBS = [
         "job_grand_chancellor"
     ],
     unlockFlag: "job_tyrant_of_silver_and_gold",
-    reactionLines: [
-        "Merchants, politicians, and thieves all call you boss.",
-        "The city’s gold flows at your word—and secrets disappear when you will it.",
-        "You play every side and always win."
-    ]
     },
     {
     key: "prankster_of_legend",
@@ -1165,11 +1035,6 @@ const HYBRID_JOBS = [
         "job_trickster_spirit"
     ],
     unlockFlag: "job_prankster_of_legend",
-    reactionLines: [
-        "People check for traps before sitting anywhere near you.",
-        "Even kings prepare extra seats—one for you, one for your next prank.",
-        "Your laughter is the only thing feared by both guards and jesters."
-    ]
     },
     {
     key: "iron_hearts_champion",
@@ -1182,11 +1047,6 @@ const HYBRID_JOBS = [
         "job_savior_of_realm"
     ],
     unlockFlag: "job_iron_hearts_champion",
-    reactionLines: [
-        "Children play at being you. Enemies pray you never come their way.",
-        "Cities sleep soundly when you stand watch.",
-        "The bards have run out of songs for your heroics."
-    ]
     },
     {
     key: "child_of_every_guild",
@@ -1199,11 +1059,6 @@ const HYBRID_JOBS = [
         "job_pathfinder"
     ],
     unlockFlag: "job_child_of_every_guild",
-    reactionLines: [
-        "No guild turns you away—you’re every mentor’s favorite story.",
-        "Some say you could start over in any trade and become a master in a year.",
-        "You remind everyone greatness has humble beginnings."
-    ]
     }
 ];
 
@@ -1234,69 +1089,6 @@ function checkJobUnlocks(rep, storyFlags, unlockedJobs = {}) {
   }
   return unlockedJobs;
 }
-function scanReputation(text) {
-  const TRIGGERS = {
-    Charmer: ['flirt','compliment','admire'],
-    Rogue: ['sneak','break','dare'],
-    Dominant: ['lead','decide','command'],
-    Submissive: ['follow','yield','defer'],
-    Prankster: ['prank','joke','tease']
-  };
-  const lc = text.toLowerCase();
-  for (let type in TRIGGERS) {
-    for (let w of TRIGGERS[type]) {
-      if (lc.includes(w)) {
-        state.reputation[type] = (state.reputation[type] || 0) + 1;
-      }
-    }
-  }
-}
-
-// Insert an NPC reaction into the narration after a trigger phrase
-function insertNPCReaction(text, phrase) {
-  const GREETING_TRIGGERS = [
-    'you see ', 'you spot ', 'you notice ', 'you catch sight of ',
-    'you run into ', 'you approach ', 'you greet ', 'you encounter ', // etc
-  ];
-  const lowered = text.toLowerCase();
-  for (let trigger of GREETING_TRIGGERS) {
-    const idx = lowered.indexOf(trigger);
-    if (idx !== -1) {
-      const punctIdx = text.indexOf('.', idx);
-      if (punctIdx !== -1) {
-        const before = text.slice(0, punctIdx + 1);
-        const after = text.slice(punctIdx + 1);
-        return before + ' ' + phrase + after;
-      }
-    }
-  }
-  return text;
-}
-
-const reactionPhrases = {
-  Charmer: {
-    Positive: [
-      "They glance your way with mild interest.",
-      "A subtle smile tugs at their lips when they see you.",
-      "They seem pleasantly charmed by your presence."
-    ],
-    Negative: [
-      "They barely acknowledge you.",
-      "They seem to avoid your gaze.",
-    ]
-  },
-  Prankster: {
-    Positive: [
-      "They grin at your antics.",
-      "They try not to laugh at your joke.",
-    ],
-    Negative: [
-      "They scowl at your prank.",
-      "They warn you to stop.",
-    ]
-  }
-  // ... add more for each type if you wish!
-};
 
 globalThis.actionMinutes = actionMinutes;
 globalThis.actionRegexList = actionRegexList;
