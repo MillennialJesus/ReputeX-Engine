@@ -131,7 +131,6 @@ const modifier = (text) => {
 // --- Helper: Rep Change Logger (unchanged) ---
 function logPersonalRepChange(text, changes) {
   if (!state.reputationLog) state.reputationLog = [];
-}
 
   const summary = Object.entries(changes)
     .map(([trait, val]) => `${trait} ${val >= 0 ? "+" : ""}${val}`)
@@ -143,6 +142,6 @@ function logPersonalRepChange(text, changes) {
     effect: changes,
     summary,
   });
-
+}
 // Don't modify this part
 modifier(text)
