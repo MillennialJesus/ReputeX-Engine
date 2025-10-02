@@ -1,81 +1,8 @@
+// Every script needs a modifier function
 const modifier = (text) => {
-  // === World & Personal Reputation Init and DEBUG ===
-  initWorldReputation(state);
-  initPersonalReputation(state);
-  if (typeof output !== "undefined") output.push("[DEBUG] Output Modifier Start");
-if (typeof checkHybridJobUnlocks === "undefined") {
-  function checkHybridJobUnlocks() {}
-}
-
-  const worldDelta = state.lastWorldReputationChange || {};
-  const personalDelta = state.lastPersonalReputationChange || {};
-  const rep = state.reputation || {};
-  let changes = [];
-
-  // --- Reputation Change Displays
-  const worldChanged = Object.keys(worldDelta).length > 0;
-  const personalChanged = Object.keys(personalDelta).length > 0;
-
-  if (typeof output !== "undefined") output.push("[DEBUG] worldDelta: " + JSON.stringify(worldDelta));
-  if (typeof output !== "undefined") output.push("[DEBUG] personalDelta: " + JSON.stringify(personalDelta));
-  if (typeof output !== "undefined") output.push("[DEBUG] reputation: " + JSON.stringify(rep));
-
-  if (worldChanged) {
-    const worldChanges = Object.entries(worldDelta)
-      .map(([faction, delta]) => `${faction} ${delta >= 0 ? "+" : ""}${delta}`)
-      .join("  ");
-    changes.push(`[World Reputation Change] ${worldChanges}`);
-    changes.push(`[World Reputation] ${getReputationSummary(state)}`);
-    if (typeof output !== "undefined") output.push("[DEBUG] Pushed world rep changes.");
-  }
-
-  if (personalChanged) {
-    const personalChanges = Object.entries(personalDelta)
-      .map(([cat, delta]) => `${cat} ${delta >= 0 ? "+" : ""}${delta}`)
-      .join("  ");
-    const personalSummary = `[Personal Reputation] 🧡:${rep.Charmer || 0} 🛡️:${rep.Honorable || 0} 🕶️:${rep.Rogue || 0} 👑:${rep.Dominant || 0} 🧎:${rep.Submissive || 0} 🎭:${rep.Prankster || 0} 🔍:${rep.Curious || 0} 👼:${rep.Innocent || 0} 😈:${rep.Mischievous || 0} 💞:${rep.Affectionate || 0} ✊:${rep.Defiant || 0} 🦁:${rep.Brave || 0} 🧠:${rep.Clever || 0} 🤹:${rep.Playful || 0}`;
-    changes.push(`[Personal Reputation Change] ${personalChanges}`);
-    changes.push(personalSummary);
-  }
-
-  state.unlockedJobs = checkJobUnlocks(
-    state.reputation,
-    state.storyFlags || {},
-    state.unlockedJobs || {}
-  );
-  checkHybridJobUnlocks(state.unlockedJobs, state);
-
-  // --- Clear rep deltas ---
-  state.lastWorldReputationChange = {};
-  state.lastPersonalReputationChange = {};
-  if (typeof output !== "undefined") output.push("[DEBUG] Cleared rep deltas.");
-
-  // --- Apply Auto-Cards ---
-  text = AutoCards("output", text); //<==🚨REMOVE IF NOT USING AUTO-CARDS!!🚨
-  if (typeof output !== "undefined") output.push("[DEBUG] AutoCards applied.");
-
-  // === Clock/Status Bar ===
-  let statusBar = "";
-  if (text && text.trim()) {
-    let clockString = typeof getClockString === "function"
-      ? getClockString()
-      : (globalThis.getClockString ? globalThis.getClockString() : "");
-    let minutesInfo = "";
-    if (typeof state !== "undefined" && state.lastActionMinutes !== undefined) {
-      minutesInfo = ` (Action took ${state.lastActionMinutes} minute${state.lastActionMinutes !== 1 ? "s" : ""})`;
-    }
-    if (clockString) statusBar = `[🕒 ${clockString}]${minutesInfo}\n`;
-  }
-
-  // --- Output DEBUG End ---
-  if (typeof output !== "undefined") output.push("[DEBUG] Output Modifier End");
-
-  // --- Final output, stacking all pieces in order ---
-  let outText = statusBar + text;
-  if (changes.length > 0) outText = [outText, ...changes].join("\n\n");
-
-  return { text: outText };
+  text = AutoCards("output", text);
+  // Directly call your global function
+  return outputModifier(text);
 };
-
 // Don't modify this part
-modifier(text);
+modifier(text)
