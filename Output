@@ -1,6 +1,6 @@
 // Every script needs a modifier function
 const modifier = (text) => {
-  text = AutoCards("output", text);
+  text = AutoCards("output", text);  //-- ⚠ Only call if using AutoCards!! ⚠ --//
   // Directly call your global function
   return outputModifier(text);
 };
