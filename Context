@@ -41,7 +41,7 @@ Do not break immersion. Never reference game mechanics, meta-knowledge, or playe
 
 // Every script needs a modifier function
 const modifier = (text) => {
-    [text, stop] = AutoCards("context", text, stop);
+    [text, stop] = AutoCards("context", text, stop); //-- ⚠ Only call if using AutoCards!! ⚠ --//
   // Directly call your global function
   return contextModifier(text);
 };
