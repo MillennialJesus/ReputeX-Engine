@@ -8,7 +8,7 @@ A modular, AI‑driven reputation and language engine for dynamic, immersive sto
 
 🔍 Regex‑Driven Lexicons Advanced regular expressions detect player intent and emotional tone from natural language input.
 
-🕛 World Clock Tracks world time in YYYY‑MM‑DD HH:MM format. Advances with player actions or dialogue.
+🕛 World Clock Tracks world time in `YYYY‑MM‑DD HH:MM format`. Advances with player actions or dialogue.
 
 🧩 Fully Modular Design Plug‑and‑play with custom scenarios. Configure world time, define factions, and set custom values for your world.
 
