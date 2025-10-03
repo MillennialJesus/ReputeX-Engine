@@ -111,3 +111,6 @@ MillennialJesus – Core integration, modular architecture, system expansion
 
 ❓ Support
 If you need help customizing or expanding ReputeX for your own scenario, contact `MillennialJesus` or `Lothens` on Discord.
+
+💖 If you’ve enjoyed using the ReputeX Engine or found it helpful in your own projects, consider supporting my work on Ko‑fi: [https://ko-fi.com/millennialjesus](https://ko-fi.com/millennialjesus).  
+Your support helps me keep building new features, refining the engine, and creating fresh scripts for the community. Thank you for being part of this journey!
