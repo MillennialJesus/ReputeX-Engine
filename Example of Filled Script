@@ -1,0 +1,2627 @@
+// THIS IS JUST AN EXAMPLE OF A FILLED-OUT VERSION OF THE SCRIPT. PLEASE DO NOT USE THIS LIBRARY WITHOUT ASKING ME, AS IT IS FOR A SCENARIO OF MINE. THANK YOU! 
+
+ //--for time card--
+  const TIME_CARD_NAME = "Time Control";
+  const TIME_CARD_HEADER = "## Time & Date";
+//--for birthday card--
+const BIRTHDAY_CARD_NAME = "Birthdays";
+const BIRTHDAY_CARD_HEADER = "## Birthdays"; 
+//--for inventory card--
+const INVENTORY_CARD_NAME = "Inventory";
+const INVENTORY_CARD_HEADER = "## Inventory";
+//--for persnal rep card--
+const PERSONAL_REP_CARD_NAME = "Personal Reputation";
+const PERSONAL_REP_CARD_HEADER = "## Personal Reputation";
+//--for world rep card--
+const WORLD_REP_CARD_NAME = "World Reputation";
+const WORLD_REP_CARD_HEADER = "## World Reputation";
+//--for month/date--
+ const MONTH_DAYS = [31,28,31,30,31,30,31,31,30,31,30,31];
+//--Your world Lore and Location data--
+const LORE = {
+  "Lake Hylia": {
+    default: "I've heard it's a large lake somewhere in Hyrule, but I don't know much more.",
+    "Ordon Village": "They say it's a vast lake to the north, but I've never seen it myself.",
+    "Castle Town": "A vast, shimmering lake said to be blessed by the goddess Hylia herself. Fishermen speak of strange lights beneath its surface on moonless nights.",
+    "Lake Hylia": "The waters stretch endlessly before you, reflecting the sky like a mirror."
+  },
+  "Death Mountain": {
+    default: "A big volcano up north, I think. Dangerous place.",
+    "Kakariko Village": "You can see its smoke from here — the Gorons live up there, mining and forging.",
+    "Castle Town": "A towering volcano whose molten heart fuels the Goron forges. Its slopes are treacherous, but rich with rare minerals.",
+    "Death Mountain": "The heat radiates from the ground itself, and the air smells faintly of sulfur."
+  },
+  "Zora's Domain": {
+    default: "That's where the Zora live, beyond the rivers.",
+    "Ordon Village": "I've heard it's where the Zora live, but I've never been that far north.",
+    "Castle Town": "A graceful city of flowing water and coral spires, home to the proud and elegant Zora people. Merchants say its markets are filled with pearls and river‑crafted jewelry.",
+    "Zora's Domain": "You stand within the heart of the Zora kingdom — the sound of rushing water is everywhere."
+  },
+  "Kakariko Village": {
+    default: "A small village somewhere in Hyrule.",
+    "Ordon Village": "A quiet settlement in the hills, not too far from here. Good people.",
+    "Castle Town": "A quiet settlement nestled in the hills, known for its warm hearths, watchful eyes, and whispered legends.",
+    "Kakariko Village": "The air smells faintly of woodsmoke, and the villagers greet you with cautious smiles."
+  },
+  "Hylia Bridge": {
+    default: "A big bridge somewhere in Hyrule.",
+    "Ordon Village": "A long stone bridge far from here — I’ve only heard travelers talk about it.",
+    "Castle Town": "A grand stone span over the roaring river, linking distant lands and serving as a meeting place for travelers.",
+    "Hylia Bridge": "The river roars beneath your feet, spray misting the air as you cross."
+  },
+  "Lost Woods": {
+    default: "A dangerous forest where people get lost.",
+    "Kakariko Village": "They say the woods shift and twist — best not to wander without a guide.",
+    "Castle Town": "A maze of shifting paths and whispering trees. Those who wander without guidance may never find their way out.",
+    "Lost Woods": "The trees seem to move when you’re not looking, and the air hums with strange magic."
+  },
+  "Twilight Grove": {
+    default: "Never heard of it, sounds eerie.",
+    "Kakariko Village": "Some say there’s a grove where the light dims and shadows move on their own.",
+    "Castle Town": "A place where the light dims and the air hums with magic. Shadows dance here as if alive.",
+    "Twilight Grove": "The air is thick with twilight energy, and every shadow seems to watch you."
+  },
+  "Forest Temple": {
+    default: "Some kind of old temple in the woods.",
+    "Kakariko Village": "An ancient temple hidden deep in the forest — few return from there.",
+    "Castle Town": "An ancient sanctuary hidden deep in the woods, its halls echoing with the voices of long‑forgotten guardians.",
+    "Forest Temple": "The stone walls are cool to the touch, and faint chanting echoes from somewhere unseen."
+  },
+  "Hyrule Castle": {
+    default: "The royal castle in the capital.",
+    "Ordon Village": "The seat of the royal family, far to the north.",
+    "Castle Town": "The seat of royal power, its white towers gleam above the bustling capital, a beacon of hope and authority.",
+    "Hyrule Castle": "The marble floors gleam, and the banners of Hyrule hang proudly from the high walls."
+  }
+};
+
+//--factions--
+const FACTION_DEFS = {
+  HyruleRoyalFamily: { emoji: "👑", rivals: ["TwiliShadowCouncil"], min: -100, max: 100 },
+  KokiriTribe:       { emoji: "🌿", rivals: [], min: -100, max: 100 },
+  GoronClan:         { emoji: "🪨", rivals: [], min: -100, max: 100 },
+  ZoraDomain:        { emoji: "💧", rivals: [], min: -100, max: 100 },
+  TwiliShadowCouncil:{ emoji: "🌑", rivals: ["HyruleRoyalFamily","SheikahOrder"], min: -100, max: 100 },
+  SheikahOrder:      { emoji: "🕶️", rivals: ["TwiliShadowCouncil"], min: -100, max: 100 },
+
+  // Potential emergents (start hidden)
+  YigaClan:          { emoji: "🗡️", rivals: ["SheikahOrder"], min: -100, max: 100, hidden: true },
+  RitoAerie:         { emoji: "🪶", rivals: [], min: -100, max: 100, hidden: true },
+};
+
+const FACTION_EMOJIS = {
+  HyruleRoyalFamily: "👑",
+  KokiriTribe: "🌿",
+  GoronClan: "🪨",
+  ZoraDomain: "💧",
+  TwiliShadowCouncil: "🌑",
+  SheikahOrder: "🗡️"
+};
+//--reputation--
+  const DEFAULT_REPUTATION = {
+    global: 0,
+    categories: {
+      warlike: 0,
+      diplomatic: 0,
+      merciful: 0,
+      ruthless: 0,
+      noble: 0,
+      deceptive: 0
+    }
+  };
+
+ const REPUTATION_CATS = [
+    "Charming", "Honorable", "Rogueish", "Dominant", "Submissive", "Pranksterish",
+    "Curious", "Innocent", "Mischievous", "Affectionate", "Defiant",
+    "Brave", "Clever", "Playful"
+  ];
+
+const DAILY_EVENTS = [
+  { hour: 5, minute: 30, text: "🥖 The baker lights his ovens, and the smell of fresh bread begins to drift through the streets." },
+  { hour: 6, minute: 0, text: "🌅 The sun rises, and the village slowly stirs awake." },
+  { hour: 7, minute: 0, text: "🐓 Farmers head to the fields, tools slung over their shoulders." },
+  { hour: 8, minute: 0, text: "🏪 Shops open their doors, merchants calling out to early customers." },
+  { hour: 10, minute: 0, text: "👩‍🎓 Children gather at the schoolhouse, their chatter filling the square." },
+  { hour: 12, minute: 0, text: "🔔 The town bell tolls noon, signaling a break for food and chatter." },
+  { hour: 14, minute: 0, text: "🛠️ Blacksmiths hammer away, the ring of steel echoing through the market." },
+  { hour: 16, minute: 0, text: "🧺 Villagers return from the fields, baskets heavy with produce." },
+  { hour: 18, minute: 0, text: "🏪 Shops close for the day, shutters drawn as lamps are lit." },
+  { hour: 19, minute: 0, text: "🙏 Evening prayers are held at the temple, candles flickering in the dusk." },
+  { hour: 20, minute: 0, text: "🍺 The tavern fills with laughter, music, and the clink of mugs." },
+  { hour: 22, minute: 0, text: "🌙 Guards begin their nightly patrols, lanterns bobbing through the streets." },
+  { hour: 23, minute: 30, text: "💤 The village grows quiet, only the occasional dog bark or owl hoot breaking the silence." }
+];
+
+
+const MONTHLY_EVENT_POOL = [
+  "The lanterns of Hyrule Town float across the river, celebrating the coming of spring.",
+  "A traveling merchant from Kakariko arrives with exotic wares.",
+  "The rivers swell with the spring rains, carrying blossoms downstream.",
+  "Rumors spread of a mysterious masked thief in the night.",
+  "The village elder calls a gathering in the town square to share wisdom.",
+  "Travelers perform a play retelling the heroic deeds of past champions.",
+  "Children compete in the annual Korok seed scavenger hunt.",
+  "The temple holds a day of silent meditation under the sacred tree.",
+  "A rare Hylian flower blooms in the royal gardens, drawing scholars and healers.",
+  "Minstrels fill the market with songs of adventure and bravery.",
+  "Artisans unveil murals depicting past battles against evil forces.",
+  "The Blacksmiths’ Guild forges a sword said to be blessed by the goddess Hylia.",
+  "A meteor shower lights the night sky, believed to bring luck to heroes."
+];
+
+
+
+const YEARLY_EVENTS = [
+  // 🌟 Repeating annual anchors
+  { month: 1, day: 1, hour: 9, text: "🎇 The Festival of Light celebrates the triumph of courage over darkness." },
+  {month: 2, day: 5, hour: 11, text: "The Royal Tax Collector makes his rounds, collecting the taxes for the year.", tag: "RoyalTax" },
+  { month: 3, day: 15, hour: 6, text: "🌱 Farmers sow the first seeds of spring, blessing the fields for a bountiful harvest." },
+  { month: 6, day: 21, hour: 18, text: "🔥 The Summer Solstice bonfires blaze across the hills, warding off evil spirits." },
+  { month: 9, day: 30, hour: 17, text: "🍇 The Harvest Feast fills the villages with food, song, and gratitude.", tag: "HarvestFestival" },
+  { month: 12, day: 21, hour: 20, text: "❄️ The Winter Solstice is marked by candlelit vigils and offerings to the goddess of light." },
+  { month: 7, day: 12, hour: 8, text: "🌊 The river floods, bringing life and fertility to the fields." },
+  { month: 4, day: 1, hour: 9, text: "🎭 The Day of Fools fills the streets with pranks, laughter, and harmless mischief." },
+  { month: 6, day: 10, hour: 14, text: "🎶 The Minstrel’s Fair brings music and dance to every tavern and square." },
+  { month: 8, day: 18, hour: 16, text: "🎨 Artisans unveil their finest works at the Grand Market of Crafts." },
+
+  // ⚔️ Political & Military (year‑specific)
+  { year: 1464, month: 2, day: 10, hour: 9, text: "⚔️ A royal decree calls for conscription, stirring unrest among the common folk." },
+  { year: 1468, month: 7, day: 4, hour: 12, text: "🛡️ A peace treaty is signed with a neighboring kingdom, celebrated with parades." },
+  { year: 1472, month: 11, day: 2, hour: 15, text: "🏰 A rebellion sparks in the borderlands, rumors of war spreading quickly." },
+
+  // 🌌 Mystical & Supernatural
+  { year: 1461, month: 5, day: 13, hour: 23, text: "🌌 A Twilight moon rises, and whispers say monsters grow restless in the dark." , tag: "TwilightMoon"},
+  { year: 1469, month: 8, day: 8, hour: 22, text: "🔮 A wandering sage foretells a hero’s rise, drawing crowds to the temple." },
+  { year: 1473, month: 10, day: 31, hour: 20, text: "🎭 Spirits walk among mortals during the Festival of Masks." },
+
+  // 🌀 Natural Disasters & Rare Events
+  { year: 1466, month: 9, day: 12, hour: 7, text: "🌪️ A great storm lashes the coast, ships vanish into the waves." },
+  { year: 1471, month: 1, day: 25, hour: 5, text: "🌋 A distant volcano erupts, ash clouds dimming the sun for days." },
+  { year: 1474, month: 3, day: 2, hour: 19, text: "💫 A shower of falling stars lights the night sky, said to grant wishes." },
+
+  // 🎭 Story‑driving one‑offs (from your originals, adapted)
+  { year: 1462, month: 3, day: 3, hour: 14, text: "🔭 The royal astrologer interprets celestial omens at the temple." },
+  { year: 1467, month: 4, day: 20, hour: 12, text: "⚔️ A grand tournament is announced to honor the hero of legend.", tag: "GrandTournament" },
+  { year: 1465, month: 5, day: 7, hour: 11, text: "👥 Villagers gather to petition the king for fairer crop distribution." },
+  { year: 1470, month: 3, day: 27, hour: 20, text: "☄️ A rare comet blazes across the night sky, signaling an important prophecy." },
+  { year: 1475, month: 8, day: 25, hour: 15, text: "👑 Rumors circulate that Princess Zelda's health is failing, causing unease in the land." },
+  { year: 1470, month: 9, day: 21, hour: 10, text: "⚔️ The Academy of Knights opens applications for young apprentices." },
+  { year: 1466, month: 10, day: 5, hour: 9, text: "🚢 A ship arrives at the port with exotic spices, artifacts, and travelers’ tales." },
+  { year: 1463, month: 11, day: 11, hour: 6, text: "🌫️ A magical fog envelops Hyrule for three days, concealing spirits and secrets." },
+  { year: 1460, month: 12, day: 31, hour: 18, text: "🎶 A famous bard composes a ballad of the hero’s deeds, spreading throughout the kingdom." }
+];
+
+const SPECIAL_EVENTS = [
+  {
+    key: "visitLakeHylia",
+    location: "Lake Hylia",
+    text: "You arrive at Lake Hylia for the first time. The water sparkles under the sun, and a gentle breeze carries the scent of wildflowers. A few fishermen nod as you pass, and the sound of waterfowl fills the air.",
+    onceOnly: true
+  },
+  {
+    key: "deathMountainClimb",
+    location: "Death Mountain",
+    text: "You begin the climb up Death Mountain, feeling the heat of the molten rocks beneath your feet. Gorons roll boulders and go about their daily tasks, watching your progress with mild curiosity.",
+    onceOnly: true
+  },
+  {
+    key: "zorasDomain",
+    location: "Zora's Domain",
+    text: "The waters of Zora’s Domain shimmer under the sun. Zoras swim gracefully and waterfalls cascade around you. The soft hum of water music accompanies your first steps into this serene place.",
+    onceOnly: true
+  },
+  {
+    key: "kakarikoVillage",
+    location: "Kakariko Village",
+    text: "You arrive in Kakariko Village, the familiar sounds of wind chimes and bustling villagers greeting travelers surround you. Children run past with laughter, and smoke rises from chimneys as villagers go about their chores.",
+    onceOnly: true
+  },
+  {
+    key: "hyliaBridgeCrossing",
+    location: "Hylia Bridge",
+    text: "Crossing Hylia Bridge for the first time, the river below glistens in the sunlight. Merchants and travelers move across the bridge, and the sound of flowing water mixes with distant bird calls.",
+    onceOnly: true
+  },
+  {
+    key: "lostWoodsDiscovery",
+    location: "Lost Woods",
+    text: "You step into the Lost Woods, where the trees tower and the path twists mysteriously. Faint magical whispers hint at secrets hidden deep within the forest.",
+    onceOnly: true
+  },
+  {
+    key: "twilightGrove",
+    location: "Twilight Grove",
+    text: "The grove is bathed in an eerie twilight glow. Shadows shift among the trees, and you sense the presence of a mysterious power watching your every move.",
+    onceOnly: true
+  },
+  {
+    key: "forestTempleEntrance",
+    location: "Forest Temple",
+    text: "You discover the entrance to the Forest Temple. Ancient stones and mystical runes signal the challenges ahead, and a chill runs down your spine as you step closer.",
+    onceOnly: true
+  },
+  {
+    key: "hyruleCastleVisit",
+    location: "Hyrule Castle",
+    text: "You enter Hyrule Castle for the first time under Princess Zelda’s careful watch. Courtiers bustle about, and banners bearing the royal crest flutter in the wind.",
+    onceOnly: true
+  }
+];
+
+const MINI_EVENTS = [
+  // --- Lake Hylia ---
+  {
+    key: "fishingLakeHylia",
+    location: "Lake Hylia",
+    text: "You try your hand at fishing along the lake. The water ripples and you might catch something useful.",
+    reward: "Fish or small item"
+  },
+  {
+    key: "boatRideLakeHylia",
+    location: "Lake Hylia",
+    text: "You take a small boat out onto the lake, enjoying the cool breeze and sparkling water.",
+    reward: "Refreshment / small stamina boost"
+  },
+
+  // --- Death Mountain ---
+  {
+    key: "mineGoron",
+    location: "Death Mountain",
+    text: "A Goron invites you to help roll boulders into the mine. You feel the heat of the rocks but gain their respect.",
+    reward: "Goron Ruby or temporary strength boost"
+  },
+  {
+    key: "lavaLeap",
+    location: "Death Mountain",
+    text: "Carefully hopping across molten rocks, you find a small hidden path.",
+    reward: "Rare crafting material"
+  },
+
+  // --- Zora's Domain ---
+  {
+    key: "swimWithZoras",
+    location: "Zora's Domain",
+    text: "You swim alongside the Zoras, learning their graceful movements and maybe earning their favor.",
+    reward: "Water Pearl or swim speed boost"
+  },
+  {
+    key: "helpZoraGuard",
+    location: "Zora's Domain",
+    text: "A Zora asks for your help to guide visitors safely across the river currents.",
+    reward: "Small treasure or minor reputation boost"
+  },
+
+  // --- Kakariko Village ---
+  {
+    key: "fetchHerbsKakariko",
+    location: "Kakariko Village",
+    text: "A villager asks you to gather herbs nearby for cooking and potions.",
+    reward: "Healing item or minor reputation"
+  },
+  {
+    key: "playWithChildren",
+    location: "Kakariko Village",
+    text: "You play games with the village children. Laughter fills the air, and bonds are formed.",
+    reward: "Affectionate reputation boost / small item"
+  },
+
+  // --- Hylia Bridge ---
+  {
+    key: "bridgeGuardDuty",
+    location: "Hylia Bridge",
+    text: "You help guide travelers safely across the bridge, keeping an eye out for mischief.",
+    reward: "Minor reputation boost or coin"
+  },
+  {
+    key: "riverObservation",
+    location: "Hylia Bridge",
+    text: "You pause to watch the river below, spotting fish and wildlife.",
+    reward: "Small crafting material or fish"
+  },
+
+  // --- Lost Woods ---
+  {
+    key: "searchLostWoods",
+    location: "Lost Woods",
+    text: "You explore the twisting paths of the Lost Woods, finding strange glowing plants and curious creatures.",
+    reward: "Mystical herb or minor clue"
+  },
+  {
+    key: "followFireflies",
+    location: "Lost Woods",
+    text: "Following the dance of fireflies, you discover a hidden glade.",
+    reward: "Hidden treasure or minor stamina boost"
+  },
+
+  // --- Twilight Grove ---
+  {
+    key: "gatherTwilightEnergy",
+    location: "Twilight Grove",
+    text: "You touch the glowing plants and feel the Twilight energy course through you.",
+    reward: "Twilight shard or magic boost"
+  },
+  {
+    key: "observeShadows",
+    location: "Twilight Grove",
+    text: "You watch shadows move mysteriously among the trees, learning their patterns.",
+    reward: "Insight / lore note"
+  },
+
+  // --- Forest Temple ---
+  {
+    key: "examineRunes",
+    location: "Forest Temple",
+    text: "You study the mystical runes at the entrance, learning a small secret spell.",
+    reward: "Minor spell or puzzle hint"
+  },
+  {
+    key: "practiceCombat",
+    location: "Forest Temple",
+    text: "You practice dodging and attacking in the temple’s training area.",
+    reward: "Combat skill boost or minor item"
+  },
+
+  // --- Hyrule Castle ---
+  {
+    key: "helpCastleServants",
+    location: "Hyrule Castle",
+    text: "You assist the castle staff with minor tasks, earning the favor of courtiers.",
+    reward: "Coin or minor reputation boost"
+  },
+  {
+    key: "exploreCastleLibrary",
+    location: "Hyrule Castle",
+    text: "You browse the Castle Library, discovering old texts and maps.",
+    reward: "Lore, map clue, or minor magic item"
+  }
+];
+
+const URT_LEXICON = {
+    warlike: [/\battack\b/i, /\bdestroy\b/i, /\braid\b/i, /\bbombard\b/i, /\bexecute\b/i],
+    diplomatic: [/\bnegotiate\b/i, /\bparley\b/i, /\btreaty\b/i, /\balliance\b/i, /\bsurrender\b/i],
+    merciful: [/\bspare\b/i, /\bheal\b/i, /\bsave\b/i, /\bprotect\b/i, /\brescue\b/i],
+    deceptive: [/\blie\b/i, /\btrick\b/i, /\bdeceive\b/i, /\bcon\b/i, /\bmanipulate\b/i],
+    noble: [/\boath\b/i, /\bswear\b/i, /\bhonor\b/i, /\bjustice\b/i, /\btruth\b/i],
+    ruthless: [/\bthreaten\b/i, /\bwarn\b/i, /\bintimidate\b/i]
+  };
+
+const REP_CATEGORY_CHANGES = {
+  warlike: {
+    TwiliShadowCouncil: 1,  // aggressive, shadow-aligned
+    GoronClan: 1,            // strong, martial
+    HyruleRoyalFamily: 1,    // knights and soldiers respect valor
+    SheikahOrder: -1,        // stealth and caution disapprove
+    ZoraDomain: -1           // pacifist water folk disapprove
+  },
+  diplomatic: {
+    KokiriTribe: 1,          // value harmony
+    ZoraDomain: 1,           // value negotiation and cooperation
+    HyruleRoyalFamily: 1,    // court favors diplomacy
+    SheikahOrder: 1,         // strategists appreciate tact
+    TwiliShadowCouncil: -1    // suspicious of diplomacy, prefer schemes
+  },
+  merciful: {
+    GoronClan: 1,            // respect kindness
+    SheikahOrder: 1,         // quietly appreciate compassion
+    ZoraDomain: 1,           // value mercy
+    KokiriTribe: 1,          // gentle souls respond positively
+    TwiliShadowCouncil: -1,  // ruthless, shadows disapprove
+    HyruleRoyalFamily: 1     // royal court respects mercy
+  },
+  ruthless: {
+    TwiliShadowCouncil: 1,   // shadows approve cunning
+    GoronClan: 1,            // strength and force respected
+    SheikahOrder: -1,        // stealth and wisdom frown on recklessness
+    KokiriTribe: -1          // pacifist children disapprove
+  },
+  noble: {
+    HyruleRoyalFamily: 1,    // court favors nobility
+    ZoraDomain: 1,           // admire honor
+    KokiriTribe: 1,          // respect goodness
+    SheikahOrder: 1,         // loyal and principled actions appreciated
+    TwiliShadowCouncil: -1,  // shadows resent open nobility
+    GoronClan: 1             // value strong, honorable actions
+  },
+  deceptive: {
+    HyruleRoyalFamily: -1,   // dishonesty frowned upon
+    ZoraDomain: -1,          // value trust and transparency
+    GoronClan: -1,           // prefer straightforwardness
+    TwiliShadowCouncil: 1,   // deception appreciated
+    KokiriTribe: -1,         // innocent folk disapprove
+    SheikahOrder: -1         // secretive but honorable, dislike trickery
+  }
+};
+
+ // --- LEXICON: Personal Reputation Tags ---
+const PERSONAL_REP_PATTERNS = [
+  // 🦸 Heroic Deeds (Huge Boosts)
+  { regex: /\b(rush(?:es|ed)? to block a Moblin attack|pushed a Kokiri child out of harm's way|shielded a villager from a Lynel|leapt to save a lost traveller|stopped a falling boulder from crushing someone|took a hit meant for a Hylian|stood against a Darknut|rescued someone from a river|faced a Moblin charging)\b/i,
+    changes: { Honorable: 3, Brave: 3, Charmer: 2 } },
+
+  // ⚖️ Justice Served (Public Deeds)
+  { regex: /\b(captured a thief in Hyrule Castle|saved Kakariko Village|stopped a public duel at the market|pardoned an enemy to restore peace|prevented execution of a Goron|stopped a Moblin attack on citizens|spared an enemy in public)\b/i,
+    changes: { Honorable: 4, Charmer: 1, Dominant: 1 } },
+
+  // 🤝 Selfless Sacrifice
+  { regex: /\b(sacrificed rupees for the poor|gave up a Hylian artifact for another|renounced a title for the sake of a friend|chose exile from Hyrule to protect someone|donated a lifesaving invention to the kingdom|gave away rare items to help)\b/i,
+    changes: { Honorable: 4, Charmer: 2, Submissive: 1 } },
+
+  // 🦁 Fearless Stand
+  { regex: /\b(stood alone against a Lynel|defied a mob of Bokoblins|refused to bow to Ganondorf's lieutenant|faced death without fear in Hyrule Field|challenged a corrupt official in Castle Town|stood your ground against Moblins)\b/i,
+    changes: { Brave: 4, Honorable: 2, Dominant: 2 } },
+
+  // 🧠 Great Ingenuity (Innovation/Rescue)
+  { regex: /\b(invented a device to save villagers|built a bridge to cross Death Mountain|crafted a cure for a Zora illness|outsmarted a Yiga Clan member with clever tricks|engineered a solution in Gortram Cliff)\b/i,
+    changes: { Clever: 3, Honorable: 2, Brave: 1 } },
+
+  // 🦹 Heinous Betrayal
+  { regex: /\b(betrayed a fellow Hylian|sold secrets to the Yiga Clan|abandoned an ally in danger|turned traitor to the kingdom|struck down an innocent villager|plotted against Zelda|overthrew a leader for selfish gain)\b/i,
+    changes: { Honorable: -5, Rogue: 5, Dominant: 2 } },
+
+  // 😈 Public Atrocity
+  { regex: /\b(burned a village|slaughtered Hinox prisoners|executed a child|committed atrocities in Kakariko|ordered a massacre|condemned the innocent|forced a confession by threat)\b/i,
+    changes: { Honorable: -5, Rogue: 3, Dominant: 3 } },
+
+  // 🗡️ Ruthless Ambition
+  { regex: /\b(ousted a rival by poison|framed a Kokiri|blackmailed a magistrate in Castle Town|forced a Goron family into ruin|stole fortune under truce|bribed officials for power)\b/i,
+    changes: { Rogue: 4, Dominant: 2, Honorable: -3 } },
+
+  // 💣 Rebellion & Treason
+  { regex: /\b(incited a Moblin riot|led rebellion for personal gain|betrayed oath to the Hylian royal family|collaborated with Ganondorf's forces|joined a coup for gold)\b/i,
+    changes: { Rogue: 4, Defiant: 3, Honorable: -3 } },
+
+  // === 🧡 Charmer (positive & awkward/negative) ===
+  { regex: /\b(smile(?:s|d)?|grin(?:s|ned)?|blush(?:es|ed)?|flirt(?:s|ed|ing)?|gaze(?:s|d)?|wink(?:s|ed)?|affection(?:ate)?|charm(?:s|ed)?|caress(?:es|ed)?|stroke(?:s|d)?|offers? a flower in Kakariko|calls [\w]+ darling|sweetheart|darling|beloved|snuggle(?:s|d)?)\b/i, changes: { Charmer: 1 } },
+  { regex: /\b(awkward compliment|flirted and failed|creepy smile|unwelcome touch|makes it weird|stares too long|fumbles a compliment)\b/i, changes: { Charmer: -1 } },
+
+  // === 🛡️ Honorable (positive & negative) ===
+  { regex: /\b(offers? protection to villagers|defends the innocent|stands up for allies|rescues?|acts with integrity|loyal|mediates?|shows mercy|restores order|keeps promise)\b/i, changes: { Honorable: 1 } },
+  { regex: /\b(breaks promise|betrays?|cheats?|abandons friends|acts dishonorably|cowardly)\b/i, changes: { Honorable: -1 } },
+
+  // === 😈 Mischievous (Child-exclusive) ===
+  { regex: /\b(secretly hides something|playfully denies|gets into trouble|draws on walls|plans? a prank|runs? off giggling|tiptoes?|sets a trap)\b/i, changes: { Mischievous: 1 } },
+
+  // === 💞 Affectionate (Child-exclusive) ===
+  { regex: /\b(snuggles?|hugs?|holds hands?|plants a kiss|shares toys|offers a flower)\b/i, changes: { Affectionate: 1 } },
+
+  // === 🧠 Clever ===
+  { regex: /\b(figures out|solves?|outsmarts?|smart idea|invent|engineer|plans? a strategy)\b/i, changes: { Clever: 1 } },
+
+  // === 🎠 Playful ===
+  { regex: /\b(giggles?|spins around|jumps?|pretends?|tickles?|starts a game|plays tag|jumps in puddles|pretends to fly)\b/i, changes: { Playful: 1 } },
+
+  // === 🦁 Brave ===
+  { regex: /\b(faces fear|holds ground|protects?|stood up|offers to help|rescues friend|braves dark|fights back)\b/i, changes: { Brave: 1 } },
+
+  // === 🤪 Prankster ===
+  { regex: /\b(jokes?|teases?|tricks?|playful mischief|banter|harmless ruse|tells joke)\b/i, changes: { Prankster: 1 } },
+
+  // === 🙇 Submissive ===
+  { regex: /\b(followed orders?|submits?|yields?|bows?|curtsies?|waits turn)\b/i, changes: { Submissive: 1, Dominant: -1 } },
+
+  // === 👑 Dominant ===
+  { regex: /\b(commands?|takes charge|asserts authority|leads?|bosses around|declares law|proclaims leadership)\b/i, changes: { Dominant: 1, Submissive: -1 } },
+// === 👶 Infant Stage Additions ===
+
+  // 💞 Affectionate (Infant)
+  { regex: /\b(reaches? for mother|reaches? for father|cuddles?|giggles? when held|rests? head on shoulder|clings? to blanket|smiles? at caregiver|holds onto finger)\b/i,
+    changes: { Affectionate: 1, Innocent: 1 } },
+
+  // 👼 Innocent (Infant)
+  { regex: /\b(cries? softly|sucks? thumb|plays? with toes|sleeps? peacefully|coos?|babbles?|claps? hands|waves? arms)\b/i,
+    changes: { Innocent: 1 } },
+
+  // 🎭 Mischievous / Playful (Infant)
+  { regex: /\b(throws? toy|drops? food on purpose|splashes? in water|pulls? hair|giggles? after mess|hides? behind blanket|covers? eyes|crawls? away quickly)\b/i,
+    changes: { Mischievous: 1, Playful: 1 } },
+
+  // 🧠 Curious (Infant)
+  { regex: /\b(reaches? for shiny object|stares? at lights|touches? everything|crawls? toward sound|examines? toy|tilts? head curiously)\b/i,
+    changes: { Curious: 1 } },
+
+  // 🦁 Brave (Infant)
+  { regex: /\b(takes? first steps|tries? to stand alone|faces? a loud noise without crying|crawls? into darkness|approaches? stranger curiously)\b/i,
+    changes: { Brave: 1 } },
+
+  // ✊ Defiant (Infant)
+  { regex: /\b(refuses? food|pushes? hand away|throws? tantrum|cries? loudly when denied|arches? back in protest)\b/i,
+    changes: { Defiant: 1, Submissive: -1 } },
+
+  // 🙇 Submissive (Infant)
+  { regex: /\b(suckles? quietly|rests? calmly|waits? patiently in crib|accepts? being held without fuss)\b/i,
+    changes: { Submissive: 1 } }
+];
+
+(function ReputeX () {
+  // Ensure base state exists
+  if (!state.worldClock) {
+    state.worldClock = { year: 1454, month: 3, day: 27, hour: 19, minute: 0 };
+  }
+  if (!state.mood) state.mood = "calm";
+  if (!state._lastOutputText) state._lastOutputText = "";
+  if (!state._justErased) state._justErased = false;
+  if (!state._justUndid) state._justUndid = false;
+  if (typeof state.lastNarratedHour !== "number") state.lastNarratedHour = -1;
+  if (typeof state.lastMoodUpdateTime !== "number") state.lastMoodUpdateTime = 0;
+  if (typeof state.lastMoodShown !== "string") state.lastMoodShown = "";
+  if (typeof state.turnsSinceMoodLine !== "number") state.turnsSinceMoodLine = 0;
+  if (!state.pendingMinutes) state.pendingMinutes = 0;
+  state.factions = state.factions || { ...FACTION_DEFS };
+  if (!Array.isArray(state.inventory)) state.inventory = [];
+
+    ensureTimeCard();               // ensures the time card is always declared first
+    parseTimeCardEdits();           // read edits from the card
+    ensureWorldRepCard();           // ensures the World Rep Card is always declared first
+    checkScheduledEvents();         // checks for all events so they don't fire at 12:00AM
+    ensureBirthdayCard();           // ensures the birthday card is always declared first
+    ensureInventoryCard();          // ensures the inventory card is always declared first
+    recalcAgesFromCurrentDate();    // update ages based on new date
+    refreshBirthdayCard();          // update birthday card display
+    checkBirthdayEvents();          // ensures the AI knows its player birthday
+    updateTimeCard();               // write the time card back out
+    updateWorldRepCard();           // updates the world rep display
+    updateInventoryCard();          // updates the inventory display
+
+function adjustFactionReps(changes) {
+  state.factions = state.factions || { ...FACTION_DEFS };
+
+  for (const faction in changes) {
+    if (state.factions.hasOwnProperty(faction)) {
+      state.factions[faction] += changes[faction];
+    } else {
+      state.factions[faction] = changes[faction]; // create if missing
+    }
+  }
+
+  updateWorldRepCard(); // refresh Story Card after change
+}
+
+function onFactionLeadershipChange(newLeaderFaction) {
+  const changes = {};
+
+  // Big boost for your own faction
+  changes[newLeaderFaction] = randomInt(30, 50);
+
+  // Drop for rival factions
+  for (const faction in state.factions) {
+    if (faction !== newLeaderFaction) {
+      changes[faction] = randomInt(-50, -30);
+    }
+  }
+
+  adjustFactionReps(changes);
+  logFactionChange(changes);
+}
+
+function onFactionStartChoice(startFaction) {
+  const changes = {};
+
+  // Boost starting faction
+  changes[startFaction] = randomInt(15, 30);
+
+  // Slight drop for rivals
+  for (const faction in state.factions) {
+    if (faction !== startFaction) {
+      changes[faction] = randomInt(-10, -5);
+    }
+  }
+
+  adjustFactionReps(changes);
+  logFactionChange(changes);
+}
+
+function logFactionChange(changes) {
+  // Just update the card — rep has already been applied in adjustFactionReps()
+  updateWorldRepCard();
+
+  // Immersive hint
+  const affectedFactions = Object.keys(changes)
+    .map(f => FACTION_EMOJIS[f] ? `${FACTION_EMOJIS[f]} ${f}` : f);
+
+  if (affectedFactions.length > 0) {
+    state.message = `You sense a shift in your standing with ${affectedFactions.join(", ")}.`;
+  }
+}
+
+
+function onFactionChange(newFaction, oldFaction) {
+  const changes = {};
+
+  // Leaving old faction — drop standing
+  if (oldFaction && state.factions.hasOwnProperty(oldFaction)) {
+    changes[oldFaction] = randomInt(-30, -15);
+  }
+
+  // Joining new faction — boost standing
+  if (newFaction && state.factions.hasOwnProperty(newFaction)) {
+    changes[newFaction] = randomInt(20, 40);
+  }
+
+  adjustFactionReps(changes);
+  logFactionChange(changes);
+}
+
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+  // --- Time Control Story Card ---
+  function ensureTimeCard() {
+    if (!Array.isArray(storyCards)) storyCards = [];
+    let card = storyCards.find(c => c?.title === TIME_CARD_NAME);
+    if (!card) {
+      card = {
+        type: "class",
+        title: TIME_CARD_NAME,
+        keys: TIME_CARD_NAME,
+        description: "Time and Date are accurate. You can now edit this card directly in the scenario to change the clock or mood.",
+        entry: `${TIME_CARD_HEADER}
+- Year: ${state.worldClock.year}
+- Month: ${state.worldClock.month}
+- Day: ${state.worldClock.day}
+- Time: ${String(state.worldClock.hour).padStart(2, "0")}:${String(state.worldClock.minute).padStart(2, "0")}
+- Mood: ${state.mood}`
+      };
+      storyCards.push(card);
+    }
+    return card;
+  }
+
+  function updateTimeCard() {
+    const card = ensureTimeCard();
+    const wc = state.worldClock;
+    let hour12 = wc.hour % 12 || 12;
+    let ampm = wc.hour < 12 ? "AM" : "PM";
+    const moodText = state.mood ? applyMoodTone("", state.mood).trim() : "";
+
+    card.entry = `${TIME_CARD_HEADER}
+- Year: ${wc.year}
+- Month: ${wc.month}
+- Day: ${wc.day}
+- Time: ${String(hour12).padStart(2, "0")}:${String(Number(wc.minute)).padStart(2, "0")} ${ampm}
+- Mood: ${state.mood}
+${moodText ? `> ${moodText}` : ""}`;
+  }
+
+  function parseTimeCardEdits() {
+  const card = storyCards.find(c => c?.title === TIME_CARD_NAME);
+  if (!card || !card.entry) return;
+
+  const lines = card.entry.split("\n");
+
+  lines.forEach(line => {
+    const clean = line.trim();
+
+    if (clean.startsWith("- Year:")) {
+      const val = parseInt(clean.replace("- Year:", "").trim(), 10);
+      if (!isNaN(val)) state.worldClock.year = val;
+    }
+    if (clean.startsWith("- Month:")) {
+      const val = parseInt(clean.replace("- Month:", "").trim(), 10);
+      if (!isNaN(val)) state.worldClock.month = val;
+    }
+    if (clean.startsWith("- Day:")) {
+      const val = parseInt(clean.replace("- Day:", "").trim(), 10);
+      if (!isNaN(val)) state.worldClock.day = val;
+    }
+    if (clean.startsWith("- Time:")) {
+      const timeMatch = clean.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (timeMatch) {
+        let hour = parseInt(timeMatch[1], 10);
+        const minute = parseInt(timeMatch[2], 10);
+        const ampm = timeMatch[3].toUpperCase();
+        if (ampm === "PM" && hour < 12) hour += 12;
+        if (ampm === "AM" && hour === 12) hour = 0;
+        state.worldClock.hour = hour;
+        state.worldClock.minute = minute;
+      }
+    }
+    if (clean.startsWith("- Mood:")) {
+      const moodVal = clean.replace("- Mood:", "").trim().toLowerCase();
+      if (moodVal) state.mood = moodVal;
+    }
+  });
+}
+
+function recalcAgesFromCurrentDate() {
+  if (!state.worldClock) return;
+  const wc = state.worldClock;
+
+  for (const who in state.birthdays) {
+    const bd = state.birthdays[who];
+    // You need a birth year for exact age
+    if (!bd.year) continue;
+
+    let age = wc.year - bd.year;
+    // If birthday hasn't happened yet this year, subtract 1
+    if (wc.month < bd.month || (wc.month === bd.month && wc.day < bd.day)) {
+      age--;
+    }
+    state.ages[who] = age;
+  }
+}
+
+  // Helper: Is Leap Year?
+  function isLeapYear(year) {
+    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  }
+
+  // Helper: Days in Month
+  function daysInMonth(year, month) {
+    if (month === 2 && isLeapYear(year)) return 29;
+    return MONTH_DAYS[month-1];
+  }
+
+  // Advance time by X minutes, handling all rollovers
+function advanceTime(minutes) {
+  state.pendingMinutes += minutes;
+  let wc = state.worldClock;
+
+  wc.minute += state.pendingMinutes;
+  state.pendingMinutes = 0;
+
+  wc.minute = Number(wc.minute) || 0;
+
+  while (wc.minute >= 60) {
+    wc.minute -= 60;
+    wc.hour += 1;
+  }
+  while (wc.hour >= 24) {
+    wc.hour -= 24;
+    wc.day += 1;
+    if (typeof onNewDay === "function") onNewDay();
+  }
+  while (wc.day > daysInMonth(wc.year, wc.month)) {
+    wc.day -= daysInMonth(wc.year, wc.month);
+    wc.month += 1;
+    if (typeof onNewMonth === "function") onNewMonth();
+  }
+  while (wc.month > 12) {
+    wc.month -= 12;
+    wc.year += 1;
+    if (typeof onNewYear === "function") onNewYear();
+    updateTimeCard();
+  }
+
+  // ✅ Collect events
+  const events = checkScheduledEvents();
+
+  // ✅ Merge into your global output buffer
+  if (typeof output !== "undefined" && events.length > 0) {
+    output.push(...events);
+  }
+}
+
+function checkScheduledEvents() {
+  if (!state.worldClock) return [];
+  const wc = state.worldClock;
+  if (!state.firedEvents) state.firedEvents = {};
+
+  const messages = [];
+
+  // --- Yearly fixed events ---
+  for (const ev of YEARLY_EVENTS) {
+    const matchesYear = !ev.year || ev.year === wc.year;
+    if (matchesYear &&
+        wc.month === ev.month &&
+        wc.day === ev.day &&
+        wc.hour === ev.hour &&
+        wc.minute === (ev.minute || 0)) {
+      const key = `yearly-${wc.year}-${wc.month}-${wc.day}-${wc.hour}-${wc.minute||0}`;
+      if (!state.firedEvents[key]) {
+        state.firedEvents[key] = true;
+        messages.push(ev.text);
+        if (ev.tag) applyFactionAfterEvent(ev.tag);
+      }
+    }
+  }
+
+  // --- Monthly RNG events ---
+  if (state.monthlyEventDays &&
+      state.monthlyEventDays.includes(wc.day) &&
+      wc.hour === 9 && wc.minute === 0) {
+    const key = `monthly-${wc.year}-${wc.month}-${wc.day}`;
+    if (!state.firedEvents[key]) {
+      state.firedEvents[key] = true;
+      const event = MONTHLY_EVENT_POOL[Math.floor(Math.random() * MONTHLY_EVENT_POOL.length)];
+      messages.push(`📅 ${event}`);
+    }
+  }
+
+  // --- Daily events ---
+  for (const ev of DAILY_EVENTS) {
+    if (wc.hour === ev.hour && wc.minute === (ev.minute || 0)) {
+      const key = `daily-${wc.year}-${wc.month}-${wc.day}-${ev.hour}-${ev.minute||0}`;
+      if (!state.firedEvents[key]) {
+        state.firedEvents[key] = true;
+        messages.push(ev.text);
+        if (ev.tag) applyFactionAfterEvent(ev.tag);
+      }
+    }
+  }
+
+  // --- Daily 06:00 drift ---
+  if (wc.hour === 6 && wc.minute === 0) {
+    const key = `facdrift-${wc.year}-${wc.month}-${wc.day}`;
+    if (!state.firedEvents[key]) {
+      state.firedEvents[key] = true;
+      tickFactionDrift();
+    }
+  }
+
+  // --- Monthly flux on day 3 at 09:00 ---
+  if (wc.day === 3 && wc.hour === 9 && wc.minute === 0) {
+    const key = `facflux-${wc.year}-${wc.month}`;
+    if (!state.firedEvents[key]) {
+      state.firedEvents[key] = true;
+      monthlyFactionFlux();
+    }
+  }
+
+  return messages;
+}
+
+function ensureFaction(name, initial = 0) {
+  state.factions = state.factions || { ...FACTION_DEFS };
+  if (!(name in state.factions)) {
+    state.factions[name] = initial;
+  }
+}
+
+function removeFaction(name) {
+  // Prefer soft‑remove to avoid breaking references
+  state._retiredFactions = state._retiredFactions || {};
+  if (name in state.factions) {
+    state._retiredFactions[name] = state.factions[name];
+    delete state.factions[name];
+  }
+  updateWorldRepCard();
+}
+
+function clampFaction(name) {
+  const def = FACTION_DEFS[name] || { min: -100, max: 100 };
+  state.factions[name] = Math.max(def.min, Math.min(def.max, state.factions[name]));
+}
+
+function nudgeFaction(name, delta) {
+  ensureFaction(name);
+  state.factions[name] += delta;
+  clampFaction(name);
+}
+
+function setFactionVisible(name, visible = true) {
+  state._factionVisibility = state._factionVisibility || {};
+  state._factionVisibility[name] = visible;
+}
+// Call once per day at 06:00 (or any fixed time) from checkScheduledEvents
+function tickFactionDrift() {
+  if (!state.worldClock) return;
+  state.factions = state.factions || { ...FACTION_DEFS };
+  state._factionVisibility = state._factionVisibility || {};
+
+  const wc = state.worldClock;
+
+  // Seasonal modifiers (tiny nudges)
+  const seasonBoosts = {
+    spring: ["KokiriTribe"],
+    summer: ["ZoraDomain"],
+    autumn: ["GoronClan"],
+    winter: ["SheikahOrder"]
+  };
+  const season = getSeason(wc.month); // spring/summer/autumn/winter
+
+  for (const faction in state.factions) {
+    // Baseline regression toward 0 (stability)
+    const score = state.factions[faction];
+    const towardZero = score === 0 ? 0 : (score > 0 ? -1 : 1); // 1 point back toward neutral
+    nudgeFaction(faction, towardZero);
+
+    // Seasonal +1 for themed groups
+    if (seasonBoosts[season]?.includes(faction)) nudgeFaction(faction, +1);
+
+    // Rival tension: if a rival is strongly positive, apply slight negative drift
+    const rivals = FACTION_DEFS[faction]?.rivals || [];
+    let rivalPressure = 0;
+    for (const r of rivals) {
+      if (state.factions[r] >= 40) rivalPressure -= 1;
+    }
+    if (rivalPressure) nudgeFaction(faction, rivalPressure);
+  }
+
+  updateWorldRepCard();
+}
+
+function getSeason(month) {
+  if (month === 12 || month <= 2) return "winter";
+  if (month <= 5) return "spring";
+  if (month <= 8) return "summer";
+  return "autumn";
+}
+
+// Call once per month at 09:00 on day 3 (or inside onNewMonth)
+function monthlyFactionFlux() {
+  state.factions = state.factions || { ...FACTION_DEFS };
+
+  // Rising: 20% chance to introduce a hidden faction if conditions are favorable
+  const emergents = Object.keys(FACTION_DEFS).filter(n =>
+    FACTION_DEFS[n].hidden && !(n in state.factions)
+  );
+  if (emergents.length && Math.random() < 0.2) {
+    const name = emergents[Math.floor(Math.random() * emergents.length)];
+    ensureFaction(name, randomInt(5, 15));
+    setFactionVisible(name, true);
+    if (typeof output !== "undefined") output.push(`📈 Rumors spread as ${name} steps into the spotlight.`);
+  }
+
+  // Falling: 10% chance to retire a faction whose score is very low
+  const vulnerable = Object.keys(state.factions).filter(n => state.factions[n] <= -60);
+  if (vulnerable.length && Math.random() < 0.1) {
+    const name = vulnerable[Math.floor(Math.random() * vulnerable.length)];
+    removeFaction(name);
+    if (typeof output !== "undefined") output.push(`📉 The influence of ${name} wanes until it fades from relevance.`);
+  }
+
+  updateWorldRepCard();
+}
+
+function applyFactionAfterEvent(tag) {
+  // Map event tags -> faction deltas
+  const map = {
+    HarvestFestival: { KokiriTribe: +8, GoronClan: +3, ZoraDomain: +3 },
+    TwilightMoon: { TwiliShadowCouncil: +12, SheikahOrder: -6 },
+    RoyalTax: { HyruleRoyalFamily: -8, SheikahOrder: +3 },
+    GrandTournament: { HyruleRoyalFamily: +10, GoronClan: +4, ZoraDomain: +2 },
+  };
+  const changes = map[tag];
+  if (!changes) return;
+  adjustFactionReps(changes);
+  logFactionChange(changes);
+}
+
+  function getClockString() {
+    const wc = state.worldClock;
+    return `Year ${wc.year}, ${String(wc.month).padStart(2,"0")}-${String(wc.day).padStart(2,"0")} ${String(wc.hour).padStart(2,"0")}:${String(wc.minute).padStart(2,"0")}`;
+  }
+
+// --- Birthday + Events ---
+state.birthdays = {
+  player: { year: 1454, month: 3, day: 27 },
+  mother: { year: 1427, month: 8, day: 14 },
+  father: { year: 1427, month: 5, day: 9 },
+};
+
+if (!state.ages) state.ages = {
+  player: 0,
+  mother: 28,
+  father: 27,
+};
+
+function getAgeBracket(age) {
+  if (age < 2) return "infant";
+  if (age < 12) return "child";
+  if (age < 18) return "teen";
+  if (age < 60) return "adult";
+  return "elder";
+}
+
+function ensureBirthdayCard() { 
+  if (!Array.isArray(storyCards)) storyCards = []; 
+  let card = storyCards.find(c => c?.title === BIRTHDAY_CARD_NAME); 
+  if (!card) { 
+    card = { 
+      type: "class", 
+      title: BIRTHDAY_CARD_NAME, 
+      keys: BIRTHDAY_CARD_HEADER, 
+      description: "Special days when characters age and celebrate.", 
+      entry: "" 
+    }; 
+    storyCards.push(card); 
+  } 
+  refreshBirthdayCard(); // Always populate
+  return card; 
+}
+
+function refreshBirthdayCard() {
+  if (!state.worldClock) return; // avoid running before clock exists
+
+  // ✅ Always recalc ages from the current date
+  recalcAgesFromCurrentDate();
+
+  const wc = state.worldClock;
+  const bCard = storyCards.find(c => c?.title === BIRTHDAY_CARD_NAME);
+  let lines = [];
+
+  for (const who in state.birthdays) {
+    const bd = state.birthdays[who];
+    const age = state.ages[who] || 0;
+    const isToday = (wc.month === bd.month && wc.day === bd.day);
+    const dateStr = `${String(bd.month).padStart(2,"0")}-${String(bd.day).padStart(2,"0")}`;
+    const bracket = getAgeBracket(age);
+
+    if (isToday) {
+      lines.push(`🎉 **${who}** — ${dateStr} — Age: ${age} (${bracket}) — 🎂 Today!`);
+    } else {
+      lines.push(`**${who}** — ${dateStr} — Age: ${age} (${bracket})`);
+    }
+  }
+
+  bCard.entry = `${BIRTHDAY_CARD_HEADER}\n` + lines.join("\n");
+}
+
+function checkBirthdayEvents() {
+  if (!state.worldClock || !state.birthdays) return;
+
+  const wc = state.worldClock;
+  const playerBD = state.birthdays.player;
+
+  if (playerBD && wc.month === playerBD.month && wc.day === playerBD.day) {
+    // Only trigger once per in-game day
+    if (state._birthdayAnnounced !== `${wc.year}-${wc.month}-${wc.day}`) {
+      state._birthdayAnnounced = `${wc.year}-${wc.month}-${wc.day}`;
+      if (typeof output !== "undefined") {
+        output.push(`🎂 Happy Birthday, player! You are now ${state.ages.player} (${getAgeBracket(state.ages.player)}). The world feels a little brighter today.`);
+      }
+    }
+  }
+}
+
+function onNewDay() {
+  let wc = state.worldClock;
+  let birthdayLines = [];
+
+  for (const who in state.birthdays) {
+    let bd = state.birthdays[who];
+    if (wc.month === bd.month && wc.day === bd.day) {
+      state.ages[who] = (state.ages[who] || 0) + 1;
+
+      if (who === "player") {
+        birthdayLines.push(`🎉 Happy Birthday, ${who}! You are now ${state.ages[who]} (${getAgeBracket(state.ages[who])}). Today feels special in a way only you can feel.`);
+      } else {
+        birthdayLines.push(`🎉 It's ${who}'s birthday! They are now ${state.ages[who]} (${getAgeBracket(state.ages[who])}).`);
+        state.mood = "hopeful";
+      }
+    }
+  }
+
+  refreshBirthdayCard(); // updates card with new ages
+
+  if (birthdayLines.length > 0 && typeof output !== "undefined") {
+    output.push(birthdayLines.join(" "));
+  }
+  if (typeof output !== "undefined") {
+    output.push(describeTimeNaturally(wc));
+  }
+  updateTimeCard();
+}
+
+function learnBirthday(name, month, day, age) {
+  if (!name || !month || !day) return; // prevent bad calls
+  state.birthdays[name] = { month, day };
+  state.ages[name] = age || 0;
+  refreshBirthdayCard();
+  if (typeof output !== "undefined") {
+    output.push(`📖 Learned ${name}'s birthday: ${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}, Age: ${state.ages[name]} (${getAgeBracket(state.ages[name])}).`);
+  }
+}
+
+// Initialize card on load
+ensureBirthdayCard();
+
+ function onNewMonth() {
+  let wc = state.worldClock;
+
+  // Pick 2 random days for this month
+  const days = daysInMonth(wc.year, wc.month);
+  let d1 = Math.ceil(Math.random() * days);
+  let d2;
+  do { d2 = Math.ceil(Math.random() * days); } while (d2 === d1);
+  state.monthlyEventDays = [d1, d2];
+
+  // Your existing flavor line
+  let eventLine = MONTHLY_EVENTS[(wc.month - 1) % MONTHLY_EVENTS.length];
+  if (typeof output !== "undefined") {
+    output.push(`📅 ${eventLine}`);
+    output.push(describeTimeNaturally(wc));
+  }
+  updateTimeCard();
+}
+
+function onNewYear() {
+  let wc = state.worldClock;
+  let eventLine = YEARLY_EVENTS[(wc.year - 1454) % YEARLY_EVENTS.length];
+
+  if (typeof output !== "undefined") {
+    output.push(`🎇 ${eventLine}`);
+    output.push(describeTimeNaturally(wc));
+  updateTimeCard();
+  }
+}
+
+// Trigger location-based events (can be called when the player enters a location)
+function triggerLocationEvent(location) {
+  if (!state.firedEvents) state.firedEvents = {};
+
+  for (const event of SPECIAL_EVENTS) {
+    if (event.location === location && !state.firedEvents[event.key]) {
+      state.firedEvents[event.key] = true;
+      if (typeof output !== "undefined") output.push(`🌟 ${event.text}`);
+    }
+  }
+}
+
+function getCompoundActionMinutes(text) {
+  let minutes = 0;
+  let matches = new Set();
+  for (const [regex, key] of actionRegexList) {
+    if (regex.test(text)) {
+      if (!matches.has(key)) {
+        const val = actionMinutes[key];
+        if (Array.isArray(val)) {
+          minutes += val[Math.floor(Math.random() * val.length)];
+        } else {
+          minutes += val || 0;
+        }
+        matches.add(key);
+      }
+    }
+  }
+  if (minutes === 0) {
+    const minor = actionMinutes.minor;
+    return Array.isArray(minor)
+      ? minor[Math.floor(Math.random() * minor.length)]
+      : minor || 1;  
+  }
+  return minutes;
+}
+
+// --- Inventory Story Card ---
+function ensureInventoryCard() {
+  if (!Array.isArray(storyCards)) storyCards = [];
+  let card = storyCards.find(c => c?.title === INVENTORY_CARD_NAME);
+  if (!card) {
+    card = {
+      type: "class",
+      title: INVENTORY_CARD_NAME,
+      keys: INVENTORY_CARD_NAME,
+      description: "Your current items. You can edit this card directly to remove or add items if needed.",
+      entry: `${INVENTORY_CARD_HEADER}\n_(empty)_`
+    };
+    storyCards.push(card);
+  }
+  return card;
+}
+
+function updateInventoryCard() {
+  const card = ensureInventoryCard();
+  state.inventory = state.inventory || [];
+
+  if (state.inventory.length === 0) {
+    card.entry = `${INVENTORY_CARD_HEADER}\n_(empty)_`;
+  } else {
+    card.entry = `${INVENTORY_CARD_HEADER}\n` +
+      state.inventory.map(item => `- ${item}`).join("\n");
+  }
+ // Clear the "used" markers after showing them once
+  state._recentlyUsedItems = [];
+}
+
+function useItem(itemName) {
+  state.inventory = state.inventory || [];
+
+  const index = state.inventory.indexOf(itemName);
+  if (index === -1) {
+    state.message = `❌ You don't have a ${itemName}.`;
+    return;
+  }
+
+  // Apply effects based on the item
+  switch (itemName) {
+    case "Healing Herb":
+      state.stamina = Math.min((state.stamina || 100) + 20, 100);
+      state.message = "🌿 You used a Healing Herb. Stamina restored!";
+      state.inventory.splice(index, 1); // remove item
+      break;
+
+    case "Fresh Fish":
+      state.stamina = Math.min((state.stamina || 100) + 10, 100);
+      state.message = "🎣 You ate the Fresh Fish. Feeling energized!";
+      state.inventory.splice(index, 1);
+      break;
+
+    case "Goron Ruby":
+      state.strengthBoostTurns = 5;
+      state.message = "💎 You feel the Goron Ruby's power surge through you!";
+      // Not consumed — keep it
+      break;
+
+    case "Water Pearl":
+      state.swimSpeedBoostTurns = 5;
+      state.message = "🌊 The Water Pearl grants you swift movement in water!";
+      // Not consumed — keep it
+      break;
+
+    default:
+      state.message = `You used the ${itemName}, but nothing happened...`;
+      state.inventory.splice(index, 1);
+  }
+// At the very bottom of your script, after all functions are defined:
+updateInventoryCard();
+}
+
+ensureInventoryCard();
+updateInventoryCard();
+
+const actionMinutes = {
+  // Eating & drinking (Zelda foods)
+  eat: [10, 15, 25],        // Hylian Rations, Fruits, Fish
+  drink: [1, 2, 3],         // Water from springs or bottles
+  cook: [15, 20, 60],       // Cooking a stew, elixir, or roasted meat
+  clean: [10, 15, 25, 45],  // Tidying a house or stable
+  bathe: [5, 15, 25, 60, 120], // Bath in hot spring or river
+  wash: [5, 10, 20],        // Wash clothes, hands, or dishes
+  dress: [3, 5, 12],        // Don tunic, armor, or garb
+  groom: [3, 5, 7],         // Comb hair, adjust armor
+  brush: [3, 5, 10],        // Brush horse or hair
+
+  // Resting & sleeping
+  sleep: [120, 300, 480, 600], // Sleep in inn, house, or forest
+  nap: [15, 30, 45, 60],       // Quick nap under tree or shrine
+  meditate: [5, 10, 12, 15],   // Meditate at shrine or near pond
+
+  // Conversation & social
+  chat: [5, 10, 15],       // Talk to villagers or allies
+  talk: [3, 5, 10],         // Converse with NPC
+  argue: [5, 12, 25, 180],  // Dispute over rupees or quests
+  comfort: [5, 8, 12],      // Console a worried villager
+  teach: [15, 25, 45, 60],  // Teach combat, Sheikah lore, or crafting
+  scold: [3, 6],             // Chide a misbehaving Kokiri or Goron
+  debate: [10, 20, 45],      // Formal discussion in castle or market
+  joke: [2, 5],              // Tell a Hylian pun
+  lecture: [20, 30, 60, 120],// Lecture about duty or kingdom law
+  confess: [3, 8, 15, 25],   // Confess deeds to Zelda or a friend
+
+  // Family & care
+  feed: [5, 7, 10],          // Feed a child or horse
+  soothe: [7, 14, 21],       // Calm frightened villager
+  cuddle: [3, 6, 9, 12],     // Hug friend or child
+  hug: [3, 5],
+  kiss: [2],                 // Light peck to loved one
+  play: [10, 15, 30],        // Play with child or in Minigame
+  babysit: [30, 60],         // Watch a child in village
+  care: [3, 6, 9, 12, 18],   // Care for horse, companion, or child
+  rock: [5],                 // Rock baby or soothe creature
+  tuck: [5],                 // Tuck into bed
+  discipline: [7],           // Teach a lesson or guide
+
+  // Emotional
+  cry: [3, 5],               // Shed tears for loss or triumph
+  laugh: [2, 5],             // Laugh at joke or event
+  sulk: [5, 8, 12],          // Pout after defeat
+  reminisce: [5, 10, 15],    // Remember past adventures
+  daydream: [5, 7, 12],      // Imagine future quests
+  worry: [3, 5, 8],          // Worry about Hyrule or loved ones
+
+  // Travel & movement
+  walk: [5, 10, 15],         // Walk through village or field
+  run: [3, 4, 6],            // Dash from enemies
+  jog: [4, 6, 10],           // Jog through forest
+  hike: [12, 18, 25],        // Hike Death Mountain or hills
+  ride: [10, 15, 20],        // Ride Epona across Hyrule
+  sail: [20, 30, 45],        // Sail on Lake Hylia or sea
+  row: [12, 18, 25],         // Row a boat
+  climb: [5, 9, 15],         // Climb cliffs or towers
+  sneak: [4, 6, 10],         // Sneak past Moblins or Yiga
+  swim: [8, 12, 18],         // Swim rivers or lakes
+  fly: [15, 25, 40],         // Glide with Paraglider
+  explore: [12, 18, 25],     // Explore shrines, caves, forests
+
+  // Work & crafting
+  study: [15, 30, 45],       // Study ancient texts or Sheikah runes
+  work: [30, 60, 90],        // Farming, smithing, or helping villagers
+  write: [10, 20, 30],       // Journal, map notes, or letters
+  read: [10, 15, 25],        // Read scrolls or books
+  paint: [15, 30, 45],       // Sketch Hyrule landscapes
+  sculpt: [20, 40, 60],      // Carve Deku wood or stone
+  invent: [25, 50, 75],      // Craft gadgets or elixirs
+  build: [30, 45, 60],       // Build structures or bridges
+  repair: [10, 20, 30],      // Fix wagon, shield, or tools
+  sew: [10, 15, 25],         // Make garments or tunics
+  shop: [15, 30, 45],        // Buy or sell in marketplace
+  train: [20, 35, 50],       // Sword, archery, or shield training
+  plant: [10, 20, 30],       // Plant crops or seeds
+  harvest: [15, 22, 30],     // Harvest Hylian crops
+  mine: [30, 45, 60],        // Mine ore or gemstones
+  smith: [25, 50, 75],       // Forge swords, shields
+  brew: [10, 18, 25],        // Brew potions or elixirs
+  enchant: [15, 25, 40],     // Imbue weapons with magic
+  experiment: [15, 30, 45],  // Test gadgets or spells
+
+  // Leisure & fun
+  sing: [5, 8, 12],          // Sing folk songs or ocarina tunes
+  dance: [8, 12, 20],        // Dance at festivals
+  game: [10, 15, 25],        // Play mini-games (bombchu, shooting)
+  listenmusic: [5, 8, 12],   // Listen to melodies or ocarina
+  perform: [15, 25, 35],     // Perform for villagers
+  watch: [5, 10, 15],        // Watch events or creatures
+  fish: [15, 30, 45],        // Fish in rivers or lakes
+  picnic: [20, 40, 60],      // Picnic near lake or meadow
+  gamble: [10, 20, 30],      // Mini-game gambling (bombchu races)
+  drinkalcohol: [15, 30, 45],// Local ale or mead in tavern
+
+  // Combat & risk
+  fight: [5, 8, 12],         // Defend village or self
+  battle: [8, 10, 15],       // Fight bandits or monsters
+  spar: [8, 12, 20],         // Practice sword combat
+  duel: [10, 12, 20],        // Formal combat challenge
+  hunt: [20, 35, 50],        // Hunt wild animals or monsters
+  escape: [5, 7, 10],        // Flee enemies or trap
+  steal: [3, 5, 8],          // Pickpocket (thief or Yiga)
+  spy: [10, 15, 25],         // Scout enemies or stealth
+  patrol: [15, 25, 35],      // Guard village or castle walls
+
+  // Magic & fantasy
+  cast: [8, 12, 20],         // Cast spell from Sheikah slate
+  ritual: [20, 30, 45],      // Shrine rituals or blessing
+  summon: [10, 18, 25],      // Summon spirit or familiar
+  heal: [5, 8, 12],          // Heal with herbs or magic
+  bless: [3, 5, 8],          // Bless villagers or crops
+  curse: [5, 7, 10],         // Cast minor curse on foe
+  scry: [5, 10, 15],         // Divine vision or Sheikah surveillance
+  brewpotion: [10, 15, 25],  // Brew elixir or potion
+  commune: [8, 12, 20],      // Commune with spirits or Great Deku Tree
+  minor: [1, 2, 3]           // Small minor action
+};
+
+function getActionMinutes(action) {
+  const options = actionMinutes[action];
+  if (!options) return 0;
+  return Array.isArray(options)
+    ? options[Math.floor(Math.random() * options.length)]
+    : options;
+}
+
+  const actionRegexList = [
+  // Resting & sleeping
+  [/\bsleep\b|\bslumber\b|\brest\b/, 'sleep'],
+  [/\bnap\b|\bdoze\b/, 'nap'],
+
+  // Eating & drinking
+  [/\beat\b|\bmeal\b|\bfeast\b|\bHylian food\b|\bfruit\b|\bfish\b/, 'eat'],
+  [/\bdrink\b|\bsip\b|\bwater\b|\btea\b|\bjuice\b/, 'drink'],
+  [/\bdrink (ale|mead|local brew)\b/, 'drinkalcohol'],
+  [/\bcook\b|\broast\b|\bbake\b|\bprepare (stew|elixir)\b/, 'cook'],
+  [/\bclean\b|\btidy\b|\bsweep\b|\bscrub\b/, 'clean'],
+  [/\bbathe\b|\bhot spring\b|\briver\b|\bwash\b/, 'bathe'],
+  [/\bdress\b|\bput on (armor|tunic|clothes)\b/, 'dress'],
+  [/\bgroom\b|\bcomb\b|\bbrush hair\b/, 'groom'],
+  [/\bbrush (hair|mane|teeth)\b/, 'brush'],
+
+  // Conversation & social
+  [/\bchat\b|\btalk\b|\bconverse\b|\bspeak with\b|\bconversation\b/, 'chat'],
+  [/\bargue\b|\bdebate\b|\bdispute\b/, 'argue'],
+  [/\bcomfort\b|\breassure\b|\bconsole\b/, 'comfort'],
+  [/\bteach\b|\binstruct\b|\btrain\b/, 'teach'],
+  [/\bscold\b|\bchide\b|\bcorrect\b/, 'scold'],
+  [/\bjoke\b|\bjest\b|\bhumor\b|\bquips?\b/, 'joke'],
+  [/\blecture\b|\blong talk\b/, 'lecture'],
+  [/\bconfess\b|\badmit\b|\breveal secret\b/, 'confess'],
+
+  // Family & care
+  [/\bfeed\b|\bgive (food|fish|fruit)\b/, 'feed'],
+  [/\bsoothe\b|\bcalm\b|\bsettle\b/, 'soothe'],
+  [/\bcuddle\b|\bhug\b|\bembrace\b/, 'cuddle'],
+  [/\bkiss\b|\bpeck\b/, 'kiss'],
+  [/\bplay\b|\bmini[- ]game\b|\bfrolic\b/, 'play'],
+  [/\bbabysit\b|\bwatch (child|children)\b/, 'babysit'],
+  [/\bcare\b|\bnurse\b|\battend\b/, 'care'],
+  [/\brock (the|a) baby\b|\bcradle\b/, 'rock'],
+  [/\btuck( in)?\b/, 'tuck'],
+
+  // Emotional
+  [/\bcry\b|\bweep\b|\bsob\b/, 'cry'],
+  [/\blaugh\b|\bgiggle\b|\bchuckle\b/, 'laugh'],
+  [/\bsulk\b|\bmope\b|\bbrood\b/, 'sulk'],
+  [/\breminisce\b|\bremember\b|\breflect\b/, 'reminisce'],
+  [/\bdaydream\b|\bimagine\b/, 'daydream'],
+  [/\bmeditate\b|\bfocus\b/, 'meditate'],
+  [/\bworry\b|\banxious\b|\bfret\b/, 'worry'],
+
+  // Travel & movement
+  [/\bwalk\b|\bstroll\b|\bwander\b|\bamble\b/, 'walk'],
+  [/\brun\b|\bdash\b|\bsprint\b/, 'run'],
+  [/\bjog\b/, 'jog'],
+  [/\bhike\b|\bclimb mountain\b/, 'hike'],
+  [/\bride\b|\bmount Epona\b|\bhorseback\b/, 'ride'],
+  [/\bsail\b|\brow\b|\bboat\b|\blake\b|\bsea\b/, 'sail'],
+  [/\bclimb\b|\bscale\b|\bascend\b/, 'climb'],
+  [/\bsneak\b|\btiptoe\b|\bcreep\b/, 'sneak'],
+  [/\bswim\b|\bdive\b|\blake\b/, 'swim'],
+  [/\bfly\b|\bglide\b|\bparaglider\b/, 'fly'],
+  [/\bexplore\b|\bscout\b|\binvestigate\b|\bventure\b/, 'explore'],
+
+  // Work & crafting
+  [/\bstudy\b|\bread\b|\blearn\b|\bresearch\b|\bSheikah lore\b/, 'study'],
+  [/\bwork\b|\blabor\b|\btoil\b|\bforge\b/, 'work'],
+  [/\bwrite\b|\bcompose\b|\bjournal\b/, 'write'],
+  [/\bpaint\b|\bdraw\b|\bsketch\b/, 'paint'],
+  [/\bsculpt\b|\bcarve\b|\bmold\b/, 'sculpt'],
+  [/\binvent\b|\btinker\b|\bengineer\b/, 'invent'],
+  [/\bbuild\b|\bconstruct\b|\bbridge\b/, 'build'],
+  [/\brepair\b|\bfix\b|\bmend\b/, 'repair'],
+  [/\bsew\b|\bstitch\b|\bknit\b/, 'sew'],
+  [/\bshop\b|\bmarket\b|\bbuy\b|\bsell\b/, 'shop'],
+  [/\btrain\b|\bpractice\b|\bdrill\b|\bswordsmanship\b/, 'train'],
+  [/\bplant\b|\bgarden\b|\bcrop\b/, 'plant'],
+  [/\bharvest\b|\breap\b/, 'harvest'],
+  [/\bmine\b|\bdig\b|\bquarry\b/, 'mine'],
+  [/\bsmith\b|\bforge\b|\bblacksmith\b/, 'smith'],
+  [/\bbrew\b|\bdistill\b|\belixir\b/, 'brew'],
+  [/\benchant\b|\bimbue\b|\bmagic weapon\b/, 'enchant'],
+  [/\bexperiment\b|\btest\b|\bgadget\b/, 'experiment'],
+
+  // Leisure & fun
+  [/\bsing\b|\bhum\b|\bchant\b|\bocarina\b/, 'sing'],
+  [/\bdance\b|\bwaltz\b|\btwirl\b/, 'dance'],
+  [/\bgame\b|\bplay\b|\bmini[- ]game\b/, 'game'],
+  [/\blisten music\b|\bmusic\b|\bmelody\b/, 'listenmusic'],
+  [/\bperform\b|\bshow\b|\brecital\b/, 'perform'],
+  [/\bwatch\b|\bobserve\b/, 'watch'],
+  [/\bfish\b|\bfishing\b/, 'fish'],
+  [/\bpicnic\b|\bouting\b/, 'picnic'],
+  [/\bgamble\b|\bbet\b|\bwager\b|\bmini[- ]game\b/, 'gamble'],
+
+  // Combat & risk
+  [/\bfight\b|\bbrawl\b|\bscuffle\b|\bfend off\b/, 'fight'],
+  [/\bbattle\b|\bwar\b|\bskirmish\b/, 'battle'],
+  [/\bspar\b|\bpractice fight\b/, 'spar'],
+  [/\bduel\b|\bchallenge\b/, 'duel'],
+  [/\bhunt\b|\btrack\b|\bmonster hunt\b/, 'hunt'],
+  [/\bescape\b|\bflee\b|\brun away\b/, 'escape'],
+  [/\bsteal\b|\bpickpocket\b|\blift\b/, 'steal'],
+  [/\bspy\b|\beavesdrop\b|\bscout\b/, 'spy'],
+  [/\bpatrol\b|\bguard\b|\bwatch\b/, 'patrol'],
+
+  // Magic & fantasy
+  [/\bcast\b|\bspell\b|\bincant\b|\bmagic\b|\bSheikah slate\b/, 'cast'],
+  [/\britual\b|\bceremony\b|\bshrine rite\b/, 'ritual'],
+  [/\bsummon\b|\bconjure\b|\bcall spirit\b/, 'summon'],
+  [/\bheal\b|\bcure\b|\bmedicine\b/, 'heal'],
+  [/\bbless\b|\bbestow\b/, 'bless'],
+  [/\bcurse\b|\bhex\b/, 'curse'],
+  [/\bscry\b|\bdivine\b|\bsee future\b|\bSheikah vision\b/, 'scry'],
+  [/\bbrew (potion|elixir)\b|\bbrew\b/, 'brewpotion'],
+  [/\bcommune\b|\bspirit\b|\bghost\b|\bGreat Deku Tree\b/, 'commune'],
+];
+ 
+  function initWorldReputation(state) {
+    if (!state.factions) state.factions = { ...FACTION_DEFS };
+    if (!state.factionReputation) {
+      state.factionReputation = {};
+      for (const key in state.factions) {
+        state.factionReputation[key] = 0;
+      }
+    }
+  }
+
+  function initPersonalReputation(state) {
+    if (!state.reputation) state.reputation = {};
+    for (const cat of REPUTATION_CATS) {
+      if (typeof state.reputation[cat] !== "number") {
+        state.reputation[cat] = 0;
+      }
+    }
+  }
+
+function ensurePersonalRepCard() {
+  if (!Array.isArray(storyCards)) storyCards = [];
+  let card = storyCards.find(c => c?.title === PERSONAL_REP_CARD_NAME);
+  if (!card) {
+    card = {
+      type: "class",
+      title: PERSONAL_REP_CARD_NAME,
+      keys: PERSONAL_REP_CARD_NAME,
+      description: "Your current personal reputation traits. All traits cap out at -100, 100 and the AI is supposed to change the way it writes as it keeps track of the values",
+      entry: ""
+    };
+    storyCards.push(card);
+  }
+  return card;
+}
+
+function updatePersonalRepCard() {
+  const card = ensurePersonalRepCard();
+  const rep = state.reputation || {};
+  card.entry = `${PERSONAL_REP_CARD_HEADER}\n` +
+    Object.entries(rep)
+      .map(([trait, score]) => `- ${trait}: ${score}`)
+      .join("\n");
+}
+
+ensurePersonalRepCard();
+updatePersonalRepCard();
+
+// Make sure every faction has a numeric score in state.factions
+function ensureFactionScores() {
+  state.factions = state.factions || {};
+  for (const name in FACTION_DEFS) {
+    if (typeof state.factions[name] !== "number") {
+      state.factions[name] = 0; // default starting reputation
+    }
+  }
+}
+
+function ensureWorldRepCard() {
+  if (!Array.isArray(storyCards)) storyCards = [];
+  let card = storyCards.find(c => c?.title === WORLD_REP_CARD_NAME);
+  if (!card) {
+    card = {
+      type: "class",
+      title: WORLD_REP_CARD_NAME,
+      keys: WORLD_REP_CARD_NAME,
+      description: "Your standing with major factions.",
+      entry: ""
+    };
+    storyCards.push(card);
+  }
+  return card;
+}
+
+function updateWorldRepCard() {
+  ensureFactionScores(); // make sure scores exist
+  const card = ensureWorldRepCard();
+
+  state._lastFactionScores = state._lastFactionScores || {};
+  state._recentFactionChanges = state._recentFactionChanges || {};
+  state._factionVisibility = state._factionVisibility || {};
+
+  card.entry = `${WORLD_REP_CARD_HEADER}\n` +
+    Object.entries(state.factions)
+      .filter(([name]) => state._factionVisibility[name] !== false) // hide if explicitly false
+      .map(([faction, score]) => {
+        let arrow = "";
+        const prev = state._lastFactionScores[faction];
+
+        if (typeof prev === "number" && score !== prev) {
+          const diff = score - prev;
+          arrow = Math.abs(diff) >= 30 ? (diff > 0 ? " ↑↑" : " ↓↓") : (diff > 0 ? " ↑" : " ↓");
+          state._recentFactionChanges[faction] = 2;
+        } else if (state._recentFactionChanges[faction] > 0) {
+          const diff = score - (prev ?? score);
+          arrow = Math.abs(diff) >= 30 ? (diff > 0 ? " ↑↑" : diff < 0 ? " ↓↓" : "") : (diff > 0 ? " ↑" : diff < 0 ? " ↓" : "");
+          state._recentFactionChanges[faction]--;
+        }
+
+        state._lastFactionScores[faction] = score;
+        const emoji = FACTION_DEFS[faction]?.emoji || "";
+        return `- ${emoji} ${faction}: ${score}${arrow}`;
+      })
+      .join("\n");
+}
+
+
+// Call these after any world reputation change:
+ensureWorldRepCard();
+updateWorldRepCard();
+
+// === Immersive Formatter Helpers ===
+function describeTimeNaturally(wc) {
+  const h = wc.hour;
+  const mood = state.mood || "neutral";
+
+  // Base time-of-day scenes
+  const timeBlocks = {
+    dawn: [
+      "The first light of dawn spills across the horizon, chasing away the night’s chill.",
+      "A pale glow creeps over the rooftops, hinting at the day ahead.",
+      "Morning stirs slowly, the sky painted in soft pastels."
+    ],
+    morning: [
+      "The morning air feels fresh, carrying the quiet bustle of a world waking up.",
+      "Sunlight filters through leaves, dappling the ground in shifting patterns.",
+      "The streets hum with the rhythm of a day finding its pace."
+    ],
+    midday: [
+      "The sun hangs high, shadows short and sharp beneath its steady gaze.",
+      "Heat shimmers in the distance as midday claims the land.",
+      "The world feels suspended in the bright stillness of early afternoon."
+    ],
+    afternoon: [
+      "The afternoon drifts lazily, the light softening as the day begins to lean toward evening.",
+      "A golden haze settles over the streets, stretching shadows just a little longer.",
+      "The air cools gently, carrying the scent of the approaching dusk."
+    ],
+    sunset: [
+      "The sky glows in warm hues as the sun dips low, stretching shadows long across the ground.",
+      "A wash of amber and crimson paints the horizon.",
+      "The last light clings to the rooftops before surrendering to night."
+    ],
+    night: [
+      "Night settles in, the air cooling as distant lights flicker to life.",
+      "The streets quieten under the watch of a silver moon.",
+      "Shadows deepen, and the world takes on a hushed, secretive tone."
+    ],
+    lateNight: [
+      "The deep hours of night wrap the world in stillness, broken only by the faintest sounds.",
+      "Darkness reigns, pierced only by the occasional glimmer of starlight.",
+      "The world sleeps, save for the quiet rustle of unseen things."
+    ]
+  };
+
+  // Mood overlays for each time block
+  const moodOverlays = {
+    hopeful: {
+      dawn: ["The light feels like a promise kept.", "The air carries a quiet sense of possibility."],
+      morning: ["Every sound seems touched with purpose.", "The day feels like it’s leaning toward something bright."],
+      midday: ["Even the heat feels alive with opportunity.", "The light seems to urge you forward."],
+      afternoon: ["The golden light feels like a gentle encouragement.", "Shadows stretch, but they don’t feel threatening."],
+      sunset: ["The fading light feels like a warm farewell.", "The horizon glows with quiet optimism."],
+      night: ["Even the darkness feels gentle tonight.", "The stars seem to whisper of good things to come."],
+      lateNight: ["The stillness feels peaceful, not empty.", "Even in the dark, there’s a sense of safety."]
+    },
+    calm: {
+      dawn: ["The world wakes without hurry.", "The air is cool and steady."],
+      morning: ["The bustle feels muted, like a soft hum.", "The light falls evenly, without drama."],
+      midday: ["The heat is steady, unchanging.", "Shadows rest quietly under the sun."],
+      afternoon: ["The air is mild, the light unhurried.", "Everything seems to move at the same slow pace."],
+      sunset: ["The colors fade without urgency.", "The horizon softens into evening."],
+      night: ["The quiet feels complete, without unease.", "The moonlight rests gently on the ground."],
+      lateNight: ["The silence is whole and undisturbed.", "The darkness feels like a blanket."]
+    },
+    tense: {
+      dawn: ["The light cuts sharply through the mist.", "The air feels tight, as if holding back a storm."],
+      morning: ["Every sound seems sharper than it should be.", "The light feels too bright, too sudden."],
+      midday: ["The heat presses down like a weight.", "Shadows seem to cling to the edges of things."],
+      afternoon: ["The air feels charged, like something is about to happen.", "The light flickers uneasily through the trees."],
+      sunset: ["The colors burn more than they soothe.", "The horizon feels like it’s closing in."],
+      night: ["Every shadow feels like it’s watching.", "The quiet is too complete, too deliberate."],
+      lateNight: ["The darkness feels alert, listening.", "Every small sound seems magnified."]
+    },
+    despair: {
+      dawn: ["The light struggles to break the horizon.", "The air feels heavy, reluctant to move."],
+      morning: ["The bustle feels distant, unreachable.", "The light is pale and cold."],
+      midday: ["The sun glares without warmth.", "The air feels dry and empty."],
+      afternoon: ["The light fades too soon, as if retreating.", "Shadows seem to grow faster than they should."],
+      sunset: ["The colors bleed away into grey.", "The horizon swallows the light without ceremony."],
+      night: ["The darkness feels endless.", "The moonlight is thin and weak."],
+      lateNight: ["The silence feels hollow.", "The dark presses in from all sides."]
+    }
+  };
+
+  // Pick time block
+  let block;
+  if (h >= 5 && h < 8) block = "dawn";
+  else if (h >= 8 && h < 12) block = "morning";
+  else if (h >= 12 && h < 15) block = "midday";
+  else if (h >= 15 && h < 18) block = "afternoon";
+  else if (h >= 18 && h < 20) block = "sunset";
+  else if (h >= 20 && h < 23) block = "night";
+  else block = "lateNight";
+
+  // Base scene
+  let scene = timeBlocks[block][Math.floor(Math.random() * timeBlocks[block].length)];
+
+  // Add mood overlay if available
+  if (moodOverlays[mood] && moodOverlays[mood][block]) {
+    const overlay = moodOverlays[mood][block];
+    scene += " " + overlay[Math.floor(Math.random() * overlay.length)];
+  }
+
+  return scene;
+}
+
+function formatPersonalRepImmersive(delta) {
+  const positives = [];
+  const negatives = [];
+
+  for (const [trait, change] of Object.entries(delta)) {
+    if (change > 0) positives.push(trait.toLowerCase());
+    else if (change < 0) negatives.push(trait.toLowerCase());
+  }
+
+  const parts = [];
+  if (positives.length) {
+    const traitList = positives.length > 1
+      ? positives.slice(0, -1).join(", ") + " and " + positives.slice(-1)
+      : positives[0];
+    parts.push(`A quiet confidence stirs—you feel more ${traitList} than before.`);
+  }
+  if (negatives.length) {
+    const traitList = negatives.length > 1
+      ? negatives.slice(0, -1).join(", ") + " and " + negatives.slice(-1)
+      : negatives[0];
+    parts.push(`A flicker of doubt creeps in—you seem less ${traitList} than before.`);
+  }
+
+  return parts.join(" ");
+}
+
+function formatWorldRepImmersive(delta) {
+  return Object.entries(delta).map(([faction, change]) => {
+    if (change > 0) return `Whispers spread among the ${faction}—your name carries new weight.`;
+    if (change < 0) return `The ${faction} speak your name with less warmth than before.`;
+    return null;
+  }).filter(Boolean).join(" ");
+}
+
+function applyMoodTone(text, mood, opts = { includeLine: true }) {
+  if (!text || !mood) return text;
+
+  let rewritten = text;
+
+  // === 1️⃣ Lexical swaps ===
+  switch (mood) {
+    case "hopeful":
+      rewritten = rewritten.replace(
+        /([.!?])\s+|\b(small|dim|cold)\b/gi,
+        (match, punc, word) => punc ? punc + " " : "warm"
+      );
+      break;
+    case "calm":
+      rewritten = rewritten.replace(
+        /([.!?])\s+|\b(and|but|so)\b/gi,
+        (match, punc, word) => punc ? punc + " " : "and"
+      );
+      break;
+    case "tense":
+      rewritten = rewritten.replace(
+        /([.!?])\s+|\b(and|but|so)\b|,\s+/gi,
+        (match, punc, conj, comma) => punc ? punc + " " : conj ? "—" : ", "
+      ).trim();
+      break;
+    case "despair":
+      rewritten = rewritten.replace(
+        /([.!?])\s+|\b(light|bright)\b/gi,
+        (match, punc, word) => punc ? punc + "... " : "dim"
+      );
+      break;
+  }
+
+  // === 2️⃣ Rhythm tweaks ===
+  switch (mood) {
+    case "hopeful":
+      rewritten = rewritten.replace(/\. ([A-Z])/g, ", $1");
+      break;
+    case "calm":
+      rewritten = rewritten.replace(/—/g, " and ");
+      break;
+    case "tense":
+      rewritten = rewritten.replace(/, /g, " — ");
+      break;
+    case "despair":
+      rewritten = rewritten.replace(/, /g, "... ");
+      break;
+  }
+
+  // === 3️⃣ Randomized mood line weaving ===
+  if (!opts.includeLine) return rewritten;
+
+  const moodLine = pickMoodLine(mood);
+  if (!moodLine) return rewritten;
+
+  // Try sentence-based insertion
+  const sentenceSplit = rewritten.split(/([.!?])/);
+  const sentenceCount = Math.floor(sentenceSplit.length / 2);
+
+  if (sentenceCount > 1) {
+    const insertIndex = Math.floor(Math.random() * sentenceCount) * 2;
+    const before = sentenceSplit.slice(0, insertIndex + 2).join("");
+    const after = sentenceSplit.slice(insertIndex + 2).join("");
+    return `${before} ${moodLine} ${after}`.replace(/\s+/g, " ");
+  }
+
+  // Fallback: insert at comma
+  const commaIndex = rewritten.indexOf(",");
+  if (commaIndex !== -1) {
+    return (
+      rewritten.slice(0, commaIndex + 1) +
+      ` ${moodLine}` +
+      rewritten.slice(commaIndex + 1)
+    ).replace(/\s+/g, " ");
+  }
+
+  // Final fallback: append
+  return `${rewritten} ${moodLine}`;
+}
+
+function pickMoodLine(mood) {
+  const moodLines = {
+    hopeful: [
+      "There’s a quiet optimism in the air, as if something good is just around the corner.",
+      "The day feels like it’s leaning toward something bright."
+    ],
+    calm: [
+      "Everything feels steady, like the world is breathing in sync with you.",
+      "A gentle stillness settles over the surroundings."
+    ],
+    tense: [
+      "Yet beneath the surface, something feels off — like the world is holding its breath.",
+      "Every sound seems sharper, every shadow deeper."
+    ],
+    despair: [
+      "Even the light seems reluctant, and silence weighs heavier than usual.",
+      "A heavy gloom hangs in the air."
+    ]
+  };
+
+  const lines = moodLines[mood];
+  if (!lines || lines.length === 0) return "";
+
+  // Ensure state tracker exists
+  if (typeof state.lastMoodLine !== "string") state.lastMoodLine = "";
+
+  let choice;
+  let attempts = 0;
+
+  do {
+    choice = lines[Math.floor(Math.random() * lines.length)];
+    attempts++;
+  } while (choice === state.lastMoodLine && attempts < 5);
+
+  state.lastMoodLine = choice;
+  return choice;
+}
+
+function getPersonalReputationPatterns() {
+  return PERSONAL_REP_PATTERNS;
+}
+
+  function modifyReputation(text, state) {
+    for (const category in URT_LEXICON) {
+      for (const pattern of URT_LEXICON[category]) {
+        if (pattern.test(text)) {
+          applyRepCategory(category, state);
+          ensureWorldRepCard();
+          updateWorldRepCard();
+          break;
+        }
+      }
+    }
+  }
+
+  // Clamp helper
+  function clamp(val, min, max) {
+    return Math.max(min, Math.min(max, val));
+  }
+
+  function modifyPersonalReputation(text, state) {
+    let age = (state.ages?.player ?? 0);
+    let isInfant = getAgeBracket(age) === "infant";
+    for (const p of PERSONAL_REP_PATTERNS) {
+      if (p.regex.test(text)) {
+        for (const cat in p.changes) {
+          if (isInfant) {
+            if (!["Innocent","Affectionate","Curious","Playful",
+                  "Clever","Brave","Mischievous","Charmer"].includes(cat)) continue;
+            let current = state.reputation[cat] || 0;
+            let delta = Math.sign(p.changes[cat]);
+            let next = current + delta;
+            state.reputation[cat] = clamp(next, -3, 3);
+          } else {
+            let current = state.reputation[cat] || 0;
+            let next = current + p.changes[cat];
+            state.reputation[cat] = clamp(next, -100, 100);
+            ensurePersonalRepCard();
+            updatePersonalRepCard();
+          }
+        }
+      }
+    }
+  }
+
+  function applyRepCategory(category, state) {
+  const delta = REP_CATEGORY_CHANGES[category];
+  if (!delta) return;
+  const before = { ...state.factions };
+  for (const faction in delta) {
+    state.factions[faction] = (state.factions[faction] || 0) + delta[faction];
+  }
+  state.lastReputationChange = trackReputationChanges(before, state.factions);
+
+  // Mood reaction to reputation change
+  const totalChange = Object.values(state.lastReputationChange).reduce((a,b) => a+b, 0);
+  if (totalChange > 0) state.mood = "hopeful";
+  else if (totalChange < 0) state.mood = "tense";
+}
+
+  function getReputationSummary(state) {
+    return Object.entries(state.factions).map(([faction, score]) => `${faction}: ${score}`).join(" | ");
+  }
+
+  function trackReputationChanges(before, after) {
+    const delta = {};
+    for (const key in after) {
+      const diff = (after[key] || 0) - (before[key] || 0);
+      if (diff !== 0) delta[key] = diff;
+    ensurePersonalRepCard();
+    updatePersonalRepCard();
+    }
+    return delta;
+  }
+
+if (!state.timeHistory) state.timeHistory = [];
+
+function advanceTimeWithHistory(minutes) {
+  if (typeof advanceTime === "function") {
+    // Save snapshot before advancing
+    state.timeHistory.push({
+      worldClock: { ...state.worldClock },
+      minutes
+    });
+
+    advanceTime(minutes);
+    updateTimeCard();
+    // 🎯 Add this line to make mood change dynamically
+    updateMoodByTime();
+
+    // Optional: show the change immediately
+    if (typeof output !== "undefined") {
+      output.push(formatMoodImmersive(state.mood));
+    }
+  }
+}
+function weightedPick(weightedMoods) {
+  const total = weightedMoods.reduce((sum, [, w]) => sum + w, 0);
+  let roll = Math.random() * total;
+  for (const [mood, weight] of weightedMoods) {
+    if ((roll -= weight) <= 0) return mood;
+  }
+}
+
+function updateMoodByTime() {
+  // Only change mood 30% of the time when called
+  if (Math.random() < 0.3) {
+    const h = state.worldClock.hour;
+
+    let weightedMoods;
+    if (h >= 5 && h < 12) weightedMoods = [["hopeful", 4], ["calm", 3], ["tense", 2], ["despair", 1]];
+    else if (h >= 12 && h < 18) weightedMoods = [["calm", 4], ["hopeful", 3], ["tense", 2], ["despair", 1]];
+    else if (h >= 18 && h < 22) weightedMoods = [["tense", 4], ["calm", 3], ["hopeful", 2], ["despair", 2]];
+    else weightedMoods = [["despair", 4], ["tense", 3], ["calm", 2], ["hopeful", 1]];
+
+    state.mood = weightedPick(weightedMoods);
+  }
+}
+
+
+function undoLastTimeAdvance() {
+  if (state.timeHistory && state.timeHistory.length > 0) {
+    const last = state.timeHistory.pop();
+    state.worldClock = { ...last.worldClock };
+    state.lastActionMinutes = 0; // clear since we're rolling back
+    updateTimeCard();
+  }
+}
+
+ // === Input Modifier ===
+ function inputModifier(text) {
+  if (!state.worldClock) state.worldClock = { year: 1454, month: 3, day: 27, hour: 7, minute: 0 };
+  if (!state.pendingMinutes) state.pendingMinutes = 0;
+
+  initWorldReputation(state);
+  initPersonalReputation(state);
+
+  // --- NEW: Item usage detection ---
+  const usePattern = /^(use|eat|drink|equip)\s+(.+)/i;
+  const match = text.trim().match(usePattern);
+  if (match) {
+    const itemName = match[2].trim();
+    useItem(itemName); // <-- Calls your inventory system
+    return { text };   // Skip the rest of the logic for this turn
+  }
+
+  const oldWorldRep = { ...state.factions };
+  const oldPersonalRep = { ...state.reputation };
+
+  const patterns = getPersonalReputationPatterns();
+  let age = (state.ages?.player ?? 0);
+  let isInfant = getAgeBracket(age) === "infant";
+
+  for (const pattern of patterns) {
+    if (pattern.regex.test(text)) {
+      for (const cat in pattern.changes) {
+        let current = state.reputation[cat] || 0;
+        let next = current + pattern.changes[cat];
+        state.reputation[cat] = isInfant
+          ? clamp(next, -3, 3)
+          : clamp(next, -100, 100);
+      }
+      logPersonalRepChange(text, pattern.changes);
+    }
+  }
+
+  state.lastWorldReputationChange = trackReputationChanges(oldWorldRep, state.factions);
+  state.lastPersonalReputationChange = trackReputationChanges(oldPersonalRep, state.reputation);
+
+ // --- Location inquiry detection ---
+if (!state.locations) state.locations = [];
+
+// Only keep valid, non-empty location names
+const allLocations = [...new Set(
+  MINI_EVENTS
+    .map(e => e.location)
+    .filter(loc => typeof loc === "string" && loc.trim().length > 0)
+)];
+
+const inquiryPattern = /\b(where(?:\s+is|'s)|tell\s+me\s+about|what(?:'s|\s+is)\s+in|describe|info(?:rmation)?\s+on)\b/i;
+
+if (inquiryPattern.test(text)) {
+  for (const loc of allLocations) {
+    const locPattern = new RegExp(`\\b${loc}\\b`, "i");
+    if (locPattern.test(text) && !state.locations.includes(loc)) {
+      state.locations.push(loc);
+
+      // Arrival-based description
+      const arrivalDescription = getLore(loc, state.currentLocation || "default");
+      addStoryCard(loc, '', 'Location', loc, arrivalDescription);
+
+      state.message = `📍 Location learned from inquiry: ${loc}`;
+
+      // Inquiry-based description with fallback
+      const description = LORE[loc] || `You have learned of ${loc}, but know little about it yet.`;
+      addStoryCard(loc, '', 'Location', loc, description);
+    }
+  }
+}
+
+  // --- Handle actions if not skipping ---
+  let mins = getCompoundActionMinutes(text);
+  if (!mins) {
+    if (!text.trim()) {
+      mins = 2;
+    } else if (
+      /^["“”']/m.test(text.trim()) ||
+      /\byou (say|ask|reply|respond|murmur|shout|whisper)\b/i.test(text)
+    ) {
+      mins = 3;
+    } else {
+      mins = 2;
+    }
+  }
+  if (Array.isArray(mins)) {
+    mins = mins[Math.floor(Math.random() * mins.length)];
+  }
+  advanceTime(mins);
+  state.lastActionMinutes = mins;
+
+  state.lastInteraction = text.toLowerCase();
+
+  return { text };
+}
+  // --- Helper: Rep Change Logger ---
+  function logPersonalRepChange(text, changes) {
+    if (!state.reputationLog) state.reputationLog = [];
+    const summary = Object.entries(changes)
+      .map(([trait, val]) => `${trait} ${val >= 0 ? "+" : ""}${val}`)
+      .join(", ");
+    state.reputationLog.push({
+      timestamp: Date.now(),
+      action: text.slice(0, 100),
+      effect: changes,
+      summary,
+    });
+  }
+
+// Helper: Immersive rep change narration
+function getRepChangeNarrative(personalDelta) {
+  if (!personalDelta || Object.keys(personalDelta).length === 0) return "";
+
+  const traitPhrases = {
+    Charmer: [
+      "Your presence draws smiles and nods of approval.",
+      "Whispers of admiration follow you discreetly."
+    ],
+    Honorable: [
+      "Your actions inspire respect among Hylians and Twili alike.",
+      "A quiet sense of duty marks your steps."
+    ],
+    Rogue: [
+      "A shadow of cunning trails your movements.",
+      "Murmurs of mischief reach those nearby."
+    ],
+    Dominant: [
+      "You stand with a commanding presence, even the bravest pause.",
+      "Others instinctively heed your lead."
+    ],
+    Submissive: [
+      "You move with humility, allowing others to take the lead.",
+      "Your gentle deference is quietly noted."
+    ],
+    Prankster: [
+      "A playful glint dances in your eyes, inviting harmless fun.",
+      "Laughter seems to follow wherever you wander."
+    ],
+    Curious: [
+      "Your eyes catch details others miss in the forests and temples.",
+      "Questions bubble within, drawing attention and guidance."
+    ],
+    Innocent: [
+      "A soft, trusting aura surrounds you, even among wary villagers.",
+      "Your gentle nature evokes care and protection."
+    ],
+    Mischievous: [
+      "Tiny acts of trickery bring quiet delight and occasional trouble.",
+      "A secretive grin hints at playful schemes."
+    ],
+    Affectionate: [
+      "Your warmth draws others closer, friends and allies alike.",
+      "Kind gestures are met with gratitude and smiles."
+    ],
+    Defiant: [
+      "You resist the unfair, even when others hesitate.",
+      "A spark of rebellion marks your choices."
+    ],
+    Brave: [
+      "Your courage steadies even the most frightened.",
+      "Boldness flows through your every step."
+    ],
+    Clever: [
+      "Your mind navigates puzzles and obstacles with ease.",
+      "Solutions emerge where others see only confusion."
+    ],
+    Playful: [
+      "A lighthearted spirit lifts the mood around you.",
+      "Joy bubbles up, coloring even tense moments."
+    ]
+  };
+
+  let lines = [];
+  for (const [trait, delta] of Object.entries(personalDelta)) {
+    if (delta > 0 && traitPhrases[trait]) lines.push(traitPhrases[trait][0]);
+    else if (delta < 0 && traitPhrases[trait]) lines.push(traitPhrases[trait][1]);
+  }
+
+  // Randomly pick 1–2 lines for variety, still concise
+  if (lines.length > 2) lines = lines.sort(() => Math.random() - 0.5).slice(0, 2);
+
+  return lines.join(" ");
+}
+
+// === Context Modifier (AI instructions only, not shown to player) ===
+function contextModifier(text) {
+  initWorldReputation(state);
+  initPersonalReputation(state);
+ 
+  return {
+    text: [text].filter(Boolean).join("\n\n")
+  };
+}
+
+function applyMiniEventReward(event) {
+  if (!state.inventory) state.inventory = [];
+  if (typeof state.stamina !== "number") state.stamina = 100;
+
+  switch (event.key) {
+    // --- Lake Hylia ---
+    case "fishingLakeHylia":
+      state.inventory.push("Fresh Fish");
+      state.message = "🎣 You caught a fish!";
+      break;
+    case "boatRideLakeHylia":
+      state.stamina = Math.min(state.stamina + 10, 100);
+      state.message = "💧 You feel refreshed from the boat ride.";
+      break;
+
+    // --- Death Mountain ---
+    case "mineGoron":
+      state.inventory.push("Goron Ruby");
+      state.strengthBoostTurns = 5;
+      state.message = "💎 You received a Goron Ruby! Strength boosted temporarily.";
+      break;
+    case "lavaLeap":
+      state.inventory.push("Molten Ore");
+      state.message = "🔥 You obtained rare Molten Ore!";
+      break;
+
+    // --- Zora's Domain ---
+    case "swimWithZoras":
+      state.inventory.push("Water Pearl");
+      state.swimSpeedBoostTurns = 5;
+      state.message = "🌊 You gained a Water Pearl! Swimming speed increased.";
+      break;
+    case "helpZoraGuard":
+      modifyReputation("helped Zora", state);
+      state.message = "💠 The Zoras appreciate your help.";
+      break;
+
+    // --- Kakariko Village ---
+    case "fetchHerbsKakariko":
+      state.inventory.push("Healing Herb");
+      modifyPersonalReputation("helped villager", state);
+      state.message = "🌿 You gathered herbs and earned goodwill.";
+      break;
+    case "playWithChildren":
+      modifyPersonalReputation("Affectionate", state);
+      state.message = "😊 The children adore you.";
+      break;
+
+    // --- Hylia Bridge ---
+    case "bridgeGuardDuty":
+      modifyReputation("guarded bridge", state);
+      state.message = "🛡️ You earned respect for keeping the bridge safe.";
+      break;
+    case "riverObservation":
+      state.inventory.push("Small Fish");
+      state.message = "🐟 You spotted and caught a small fish.";
+      break;
+
+    // --- Lost Woods ---
+    case "searchLostWoods":
+      state.inventory.push("Mystical Herb");
+      state.message = "🌱 You found a rare mystical herb.";
+      break;
+    case "followFireflies":
+      state.inventory.push("Hidden Treasure");
+      state.message = "✨ You discovered a hidden treasure.";
+      break;
+
+    // --- Twilight Grove ---
+    case "gatherTwilightEnergy":
+      state.inventory.push("Twilight Shard");
+      state.magicBoostTurns = 5;
+      state.message = "🌌 Twilight energy surges through you.";
+      break;
+    case "observeShadows":
+      state.inventory.push("Shadow Lore Note");
+      state.message = "📜 You gained insight into the shadows.";
+      break;
+
+    // --- Forest Temple ---
+    case "examineRunes":
+      state.inventory.push("Minor Spell Scroll");
+      state.message = "📜 You learned a small secret spell.";
+      break;
+    case "practiceCombat":
+      state.combatSkillBoostTurns = 5;
+      state.message = "⚔️ Your combat skills feel sharper.";
+      break;
+
+    // --- Hyrule Castle ---
+    case "helpCastleServants":
+      modifyReputation("helped castle", state);
+      state.message = "🏰 The castle staff speak well of you.";
+      break;
+    case "exploreCastleLibrary":
+      state.inventory.push("Ancient Map");
+      state.message = "🗺️ You discovered an ancient map.";
+      break;
+
+    default:
+      state.message = `🎁 You received: ${event.reward}`;
+  }
+    updateInventoryCard();
+}
+
+
+// === Output Modifier (immersive, no numbers, shows clock and narrative rep change) ===
+function outputModifier(text) {
+  initWorldReputation(state);
+  initPersonalReputation(state);
+
+  // Undo / Erase detection
+  if (text === state._lastOutputText && text.trim() !== "") state._justUndid = true;
+  if (!state.worldClock) state._justErased = true;
+  if (state._justUndid || state._justErased) {
+    undoLastTimeAdvance();
+    state._justUndid = false;
+    state._justErased = false;
+  }
+  state._lastOutputText = text;
+
+  const worldDelta = state.lastWorldReputationChange || {};
+  const personalDelta = state.lastPersonalReputationChange || {};
+  const wc = state.worldClock;
+
+  // Auto‑advance time
+  if (typeof advanceTime === "function") {
+    let minutesPassed = Math.floor(Math.random() * 3) + 1;
+    advanceTime(minutesPassed);
+    state.lastActionMinutes = minutesPassed;
+
+    // Throttled mood updates
+    if (typeof updateMoodByTime === "function") {
+      const currentTime = wc.hour * 60 + wc.minute;
+      const lastTime = state.lastMoodUpdateTime || 0;
+      const minutesSinceLastMood = currentTime - lastTime;
+      const adjustedMinutes = minutesSinceLastMood < 0 ? (1440 + minutesSinceLastMood) : minutesSinceLastMood;
+      const threshold = state.nextMoodThreshold || (30 + Math.floor(Math.random() * 31));
+
+      if (adjustedMinutes >= threshold) {
+        updateMoodByTime();
+        state.lastMoodUpdateTime = currentTime;
+        state.nextMoodThreshold = 30 + Math.floor(Math.random() * 31);
+      }
+    }
+
+    if (typeof updateTimeCard === "function") updateTimeCard();
+  }
+
+  // Build immersive narrative parts
+  let narrativeParts = [];
+
+  if (wc && state.lastActionMinutes > 0) {
+    if (wc.hour !== state.lastNarratedHour) {
+      narrativeParts.push(describeTimeNaturally(wc));
+      state.lastNarratedHour = wc.hour;
+    }
+  }
+  if (state._justUndid || state._justErased) {
+    state.lastMoodUpdateTime = 0;
+    state.nextMoodThreshold = 30 + Math.floor(Math.random() * 31);
+  }
+  if (Object.keys(worldDelta).length > 0) narrativeParts.push(formatWorldRepImmersive(worldDelta));
+  if (Object.keys(personalDelta).length > 0) narrativeParts.push(formatPersonalRepImmersive(personalDelta));
+
+  // Clear deltas
+  state.lastWorldReputationChange = {};
+  state.lastPersonalReputationChange = {};
+
+  // Start with base AI output + immersive parts
+  let outText = text;
+  if (narrativeParts.length > 0) outText += "\n\n" + narrativeParts.join(" ");
+
+  // === Zelda-specific systems ===
+  if (!state.locations) state.locations = [];
+  if (!state.creatures) state.creatures = [];
+  if (state.sanity === undefined) state.sanity = 100;
+
+  const actionType = (info && info.actionType) ? info.actionType : '';
+  const isDoOrSay = actionType === 'do' || actionType === 'say';
+  const isRetry = info && info.isRetry;
+  const isContinue = info && info.isContinue;
+
+  // Sanity system
+  const sanityTriggers = [
+    'forbidden magic', 'eldritch', 'unnameable', 'beyond comprehension',
+    'your mind fractures', 'your thoughts twist', 'the veil tears', 'reality bends',
+    'your core warps', 'the sky bleeds', 'time folds'
+  ];
+  const sanityTriggerPattern = new RegExp(sanityTriggers.join('|'), 'i');
+  if (sanityTriggerPattern.test(text)) {
+    const roll = Math.floor(Math.random() * 20);
+    if (roll === 0) {
+      const loss = Math.floor(Math.random() * 10 + 5);
+      state.sanity = Math.max(0, state.sanity - loss);
+      state.message = `🧠 Sanity decreased (${loss}): ${state.sanity}`;
+    }
+  }
+
+  // Random twist system
+  if (isDoOrSay && !isContinue) {
+    if (isRetry || state.twistRoll === undefined) {
+      state.twistRoll = Math.floor(Math.random() * 200);
+    }
+    if (state.twistRoll === 0) {
+      const twists = [
+        'Suddenly, you spot a monster lurking in the mist.',
+        'A strange hum fills the air—magic is warping nearby reality.',
+        'A cloaked figure watches you from the treeline, then vanishes.',
+        'The ground trembles. Something massive stirs beneath Yggdrasil.',
+        'A glowing rune pulses beneath your feet. You feel time slow.',
+        'A wild magic beast bursts from the underbrush, eyes glowing.',
+        'The sky darkens unnaturally. A storm of mana begins to form.',
+        'You hear chanting in an unknown tongue echoing from the ruins.',
+        'A portal flickers open nearby—briefly revealing another realm.',
+        'A raven lands beside you and speaks a single word: "Run."',
+        'The wind shifts. You smell ash. Something ancient has awakened.',
+        'A forgotten shrine reveals itself, its guardian still watching.',
+        'You step into a clearing—and the world around you freezes.',
+        'A settlement appears where none existed before. Its lights flicker.',
+        'Your shadow moves independently for a moment, then returns.',
+        'A voice whispers from your satchel: "You are not alone."',
+        'The trees bend toward you, as if listening.',
+        'A spectral beast crosses your path, leaving frost in its wake.',
+        'You feel a sudden pull—your magic core pulses violently.',
+        'A distant horn sounds. Something is hunting nearby.'
+      ];
+      outText = twists[Math.floor(Math.random() * twists.length)];
+    }
+  }
+
+  // Helper for description extraction
+  const extractDescription = (rawText, name) => {
+    const windowSize = 100;
+    const index = rawText.indexOf(name);
+    if (index === -1) return 'No description available.';
+    const start = Math.max(0, index - windowSize);
+    const end = Math.min(rawText.length, index + name.length + windowSize);
+    const context = rawText.slice(start, end);
+    const descMatch = context.match(/(?:is|was|appears|looks|seems|stands|rises|shaped like|with|covered in|bearing)\s+([^.,;]+)/i);
+    return descMatch ? descMatch[1].trim() : 'No description available.';
+  };
+
+  // Location detection
+const settlementCues = [
+  // Formal descriptors
+  'the\\s+village\\s+of',
+  'the\\s+town\\s+of',
+  'the\\s+city\\s+of',
+  'the\\s+hamlet\\s+of',
+  'the\\s+fortress\\s+of',
+  'the\\s+capital\\s+of',
+  'the\\s+port\\s+of',
+  'the\\s+settlement\\s+of',
+  'the\\s+outpost\\s+of',
+
+  // Narrative / conversational
+  'arriv(?:e|es|ed|ing)?\\s+(?:at|in)',
+  'you\\s+arriv(?:e|es|ed|ing)?\\s+(?:at|in)',
+  'reach(?:es|ed|ing)?',
+  'you\\s+reach(?:es|ed|ing)?',
+  'enter(?:s|ed|ing)?',
+  'you\\s+enter(?:s|ed|ing)?',
+  'step(?:s|ped|ping)?\\s+(?:into|inside)',
+  'you\\s+step(?:s|ped|ping)?\\s+(?:into|inside)',
+  'make(?:s|d|ing)?\\s+your\\s+way\\s+(?:to|toward)',
+  'heading\\s+toward',
+  'headed\\s+toward',
+  'find(?:s|ing)?\\s+yourself\\s+(?:in|at)',
+  'come(?:s|came|coming)?\\s+upon',
+  'settlement\\s+called',
+  'place\\s+called',
+  'known\\s+(?:as|locally\\s+as)'
+];
+
+const landmarkCues = [
+  // Formal descriptors
+  'the\\s+ruins\\s+of',
+  'the\\s+shrine\\s+of',
+  'the\\s+spire\\s+of',
+  'the\\s+grove\\s+of',
+  'the\\s+monolith\\s+of',
+  'the\\s+temple\\s+of',
+  'the\\s+tower\\s+of',
+  'the\\s+canyon\\s+of',
+  'the\\s+cliffs\\s+of',
+  'the\\s+falls\\s+of',
+  'the\\s+bridge\\s+of',
+  'the\\s+pass\\s+of',
+  'the\\s+cavern\\s+of',
+  'the\\s+cave\\s+of',
+  'the\\s+crater\\s+of',
+
+  // Narrative / conversational
+  'landmark\\s+known\\s+as',
+  'place\\s+known\\s+as',
+  'spot\\s+known\\s+as',
+  'site\\s+known\\s+as',
+  'you\\s+come\\s+across',
+  'you\\s+come\\s+upon',
+  'you\\s+stumble\\s+upon',
+  'you\\s+discover',
+  'you\\s+find',
+  'you\\s+find\\s+yourself\\s+at',
+  'you\\s+find\\s+yourself\\s+before',
+  'standing\\s+before',
+  'standing\\s+at',
+  'approach(?:es|ed|ing)?\\s+the',
+  'approaching\\s+the',
+  'looking\\s+up\\s+at',
+  'looking\\s+out\\s+over'
+];
+
+  const cuePatterns = [...settlementCues, ...landmarkCues].map(pattern =>
+  new RegExp(`${pattern}\\s+([A-Z][a-zA-Z'\\- ]{2,})`, 'gi')
+);
+
+for (const pattern of cuePatterns) {
+  let match;
+  while ((match = pattern.exec(text)) !== null) {
+    const name = match[1].trim();
+    const cue = match[0].toLowerCase();
+    const type = settlementCues.some(c => cue.includes(c)) ? 'Settlement' : 'Landmark';
+
+    // ✅ Only proceed if the text contains an arrival/travel action
+    const actionContext = /(arrive|enter|travel|head|go|walk|run|make your way)/i;
+    if (!actionContext.test(text)) continue;
+
+    if (!state.locations.includes(name)) {
+      state.locations.push(name);
+
+      const description = extractDescription(text, name);
+      const finalDescription = description === 'No description available.'
+        ? `You have learned of ${name}, but know little about it yet.`
+        : description;
+
+      addStoryCard(name, '', type, name, `Appearance: ${finalDescription}`);
+      state.message = `📍 New ${type} added: ${name}`;
+    }
+  }
+}
+
+  // Creature detection
+const creatureCues = [
+  'a creature known as', 'a beast called', 'a magic beast named', 'a monster named'
+];
+const creaturePattern = new RegExp(`(${creatureCues.join('|')})\\s+([A-Z][a-zA-Z'\\- ]{2,})`, 'gi');
+
+let match;
+while ((match = creaturePattern.exec(text)) !== null) {
+  const cue = match[1].toLowerCase();
+  const name = match[2].trim();
+  const type = cue.includes('magic') || cue.includes('mana') || cue.includes('core')
+    ? 'Magic Beast'
+    : 'Monster';
+
+  if (!state.creatures.includes(name)) {
+    state.creatures.push(name);
+
+    const description = extractDescription(text, name);
+
+    addStoryCard(
+      name,   // trigger key is just the name
+      '',     // entry left blank
+      type,
+      name,   // title is just the name
+      `Appearance: ${description}`
+    );
+
+    state.message = `👾 New ${type} added: ${name}`;
+  }
+}
+
+// === Mini-event detection ===
+if (!state.completedMiniEvents) state.completedMiniEvents = [];
+
+for (const event of MINI_EVENTS) {
+  if (
+    state.locations.includes(event.location) &&
+    !state.completedMiniEvents.includes(event.key) &&
+    text.includes(event.location)
+  ) {
+    outText += `\n\n${event.text}`;
+    state.completedMiniEvents.push(event.key);
+    applyMiniEventReward(event);
+  }
+}
+
+  // === Mood tone rewrite + mood line ===
+  if (state.mood) outText = applyMoodTone(outText, state.mood, { includeLine: false });
+
+  let showMoodLine = false;
+
+  // Condition 1: Mood changed
+  if (state.mood !== state.lastMoodShown) {
+    showMoodLine = true;
+    state.lastMoodShown = state.mood;
+    state.turnsSinceMoodLine = 0;
+  }
+  // Condition 2: X turns passed since last line
+  else if (state.turnsSinceMoodLine >= 10) {
+    showMoodLine = true;
+    state.turnsSinceMoodLine = 0;
+  }
+  // Increment turn counter
+  else {
+    state.turnsSinceMoodLine++;
+  }
+
+  // Append mood line if triggered
+  if (showMoodLine) {
+    outText += " " + pickMoodLine(state.mood);
+  }
+
+  return { text: outText };
+}
+
+  // === Expose globally ===
+globalThis.inputModifier = inputModifier;
+globalThis.contextModifier = contextModifier;
+globalThis.outputModifier = outputModifier;
+
+globalThis.ensureTimeCard = ensureTimeCard;
+globalThis.updateTimeCard = updateTimeCard;
+
+globalThis.ensurePersonalRepCard = ensurePersonalRepCard;
+globalThis.updatePersonalRepCard = updatePersonalRepCard;
+
+globalThis.ensureWorldRepCard = ensureWorldRepCard;
+globalThis.updateWorldRepCard = updateWorldRepCard;
+
+globalThis.ensureBirthdayCard = ensureBirthdayCard;
+globalThis.refreshBirthdayCard = refreshBirthdayCard; // so you can rebuild the list anytime
+globalThis.onNewDay = onNewDay; // so you can trigger the daily birthday check manually
+globalThis.learnBirthday = learnBirthday; // so you can add new birthdays dynamically
+
+})();
